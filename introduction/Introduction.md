@@ -1123,3 +1123,833 @@ execution fires it off and moves on
 executing the next statement
 
 
+---
+
+### Hello World using Express
+https://youtu.be/gqpju6Krv_c
+
+
+now we don't want to work with HTTP
+requests at a low level so let's use a
+module that helps us handle requests in
+a more structured way now Express is an
+oj s module that handles routing request
+parameters and other details of HTTP
+requests it provides an API that enables
+us to work with requests more easily
+throughout our application overall it
+provides a variety of routing and
+middleware functionality now covering
+Express is not really required to teach
+MongoDB or the nodejs driver but it
+enables us to more easily assemble
+interesting exercises and projects for
+this class in addition because nodejs is
+widely used for web apps Express and
+other modules will look at our part of a
+large component of the ecosystem of
+tools used to build applications backed
+by MongoDB to get started looking at
+Express let's build a simple hello world
+application so here I have an empty apt
+JS file and the first thing I need to do
+of course is specify the dependency on
+express next I'm going to use the
+Express module to create an express app
+with which I can register routes in my
+application now what our routes simply
+put routes are web addresses or URLs
+that we want to support within our
+application now in this simple hello
+world we're just going to provide
+support for the home page or the / or
+root route to do that we use the app
+object and the get method and specify a
+route handler for a / route okay so here
+this call to get will register this
+route handler for the route route now
+you should be getting accustomed to this
+structure in which we call a method and
+pass a callback that will be executed at
+some point in the future in this case
+this callback or route handler will be
+executed any time a client makes a
+request for this particular URL now
+Express will pass along a request object
+and a response object both with AP is
+that we can use in in the case of
+request determining what response to put
+together and then in the case of the
+response object actually building that
+response we have support through the
+response
+object for creating HTTP headers as well
+as the body of the response now in this
+case the only thing we're worried about
+really is the body of the response and
+note that we're using the response
+object and the send method all send is
+going to do is put together a nice
+well-formed HTTP response with an
+appropriate content lengths and other
+headers and package hello world up in
+the body of that response now the next
+thing I want to do is handle any other
+routes in a graceful way essentially
+what i'm going to do is add a fall
+through route handler using the use
+method of our app putting this at the
+end of our route handlers essentially
+guarantees that any route not handled by
+our application will be handled by this
+event handler here in this case we're
+simply going to send back a 404 status
+or not found now finally we're going to
+set this application up to listen for
+connections from clients so to set up
+our app to listen for client connections
+we use the listen method of our Express
+app we specify what port we want to
+listen on and a call back this should be
+executed once the server is up and
+listening now in this case I've already
+installed express using the package
+manager so we can simply fire it off and
+we see that the Express server is
+listening on port 3000 now what we want
+to do is test this by connecting to it
+from a web browser so hitting localhost
+at port 3000 from the browser causes
+this route handler to be executed
+sending back the body hello world and a
+200 status response because it was
+successful now if we try to access any
+other route for this server that is the
+server running on localhost at port 3000
+will get a 404 response try fruit not
+found about fruit / oranges not found
+essentially any other route that we try
+other than / will get a 404 so from this
+you should have a pretty good idea of
+the basics at least of setting up a web
+application using the Express routing
+framework
+
+
+---
+
+### Hello Templates
+https://youtu.be/Xww8NV71npM
+
+so here again we have our simple hello
+world application using express but
+there's one problem with this the issue
+here is that in our responses were just
+serving this static string every time
+what we really want to do is send back
+an HTML page but at the same time we
+actually want to change the contents of
+that page programmatically the way we
+can do this is using a template library
+in order to use a template library we
+need to construct templates in this case
+just one template for this particular
+route so the first thing we'll do is
+make a directory for our templates or
+HTML pages so I'm going to create the
+views directory then we'll create an
+HTML file for our template and for this
+let's just do hello name now many of you
+probably have experience using template
+libraries for those of you who don't
+will see what this means in a bit but
+basically these two curly braces are
+syntax that the template engine
+understands they essentially delimit a
+variable whose value we will pass in
+when we render an HTML page using this
+template so now let's go back to our
+application and let's include our
+template engine now before we do that
+we're going to include a library called
+consolidate consolidate is basically a
+set of wrappers for a number of template
+engines for express the value
+consolidate provides is that express
+requires template libraries to have a
+certain interface and consolidate
+handles that for us now in order to use
+our template engine in express we need
+to specify a couple of application
+settings in express so now that I've set
+up these application settings let's walk
+through and understand what's happening
+here so the first thing that's happening
+is that we're registering the nun jux
+template engine as being associated with
+the HTML extension then here we're
+saying set the view engine app setting
+to HTML meaning that we're going to end
+up using this engine to render our HTML
+files and then finally we're specifying
+where our templates are located and if
+we remember we created this views
+directory and created our template with
+in that directory now underscore
+underscore der name is a variable
+provided by the node.js environment
+essentially this will allow us to access
+the full path to the directory in which
+this file the file we're currently
+editing here is stored this allows us
+then to specify the full path to the
+views directory as the location for our
+views that will be used by Express when
+using the nunchucks template engine all
+right so now we've registered nunchucks
+our template engine with Express and
+then we've told Express where to look
+for our HTML files so now let's actually
+generate content using this template
+rather than just sending a static string
+back to do that instead of using send
+will want to use the render method and
+rather than passing a static string well
+instead specify the template we want to
+use and we'll give it an object in which
+will pass the value for that name
+variable in the template in this case is
+my object I'm going to pass templates as
+the value for name so what I'll expect
+to see as output is hello templates
+given the way we've constructed our
+template here so now let's see how this
+all works now we know we're missing
+Express and consolidate now among our
+dependencies so I'll just go ahead and
+install those now let's run our app and
+we can see that our server starts up and
+is listening on port 3000 so let's
+access local host at port 3000 and we
+can see that we actually forgot to
+install the dependency for nunchucks so
+let's go back to the app and do that
+kills server and install a nunchucks
+okay great let's launch the server again
+and now tada you can see here that our
+output is what was expected let's
+quickly take a look at our template
+again we're printing hello and whatever
+was passed as the value of a name
+variable in the object used as part of
+the rendering process for this template
+looking here we can see that to render
+we're passing
+this object where we're specifying
+templates as the value for name so
+render takes the name of the template
+file in the views directory that we want
+to render and an object with values for
+all variables used in that template so
+just end to end for this application
+Express allows us to define this route
+to set up a template engine as well as
+specify where Express can find our
+templates and finally render pages as
+part of the route handler for any given
+route
+
+
+---
+
+### All Together Now
+https://youtu.be/S5z336ijwUE
+
+okay now let's put it all together we
+want to look at routing using Express
+combined with templates using nunchucks
+all within a nodejs app using the node
+driver for MongoDB so this should look
+pretty familiar here we're simply
+combining all of the dependencies that
+we need for this application here we're
+setting up our templates here we're
+creating the necessary application
+settings so that our templates will
+render properly and then finally we're
+connecting to the MongoDB database now
+we can't do anything in this application
+without a live connection to MongoDB
+because this new version of our
+application is backed by MongoDB we're
+actually going to interact with that
+same movie data we were looking at
+earlier so what this means is that the
+routes that this application supports
+are going to be making queries to the
+MongoDB database in order to create a
+response to the request or to render a
+webpage that will then be served back to
+the client so the meat of this
+application is right here as I said
+we're going to connect to the MongoDB
+database first and we need a connection
+before we can do anything so that means
+that we need to set up our app in the
+context of that connection there are a
+variety of different ways we could do
+this this is what I think is probably
+the simplest at this stage of the course
+what we're doing here is setting up our
+entire app in the callback for this
+connect request what's most important is
+that this DB connection is in scope for
+any of the route handlers now in this
+particular app we have just one real
+route handler we do have this
+fall-through
+that will return a 404 for any routes
+that are requested other than the route
+route or slash but for this route
+handler because we're going to be making
+a query to MongoDB we need access to
+that DB handle or that connection and
+you can see here in the route handler
+for slash we're using DB and issuing a
+fine command as we did previously to our
+running instance of MongoDB now let's
+take a look at the callback for this
+call to find and this is where we're
+actually calling on our template engine
+to render a response for us
+that will then be handed back to the
+client as a response for this route
+that's requested using an HTTP GET
+request okay
+so we're gonna use the render command of
+the response object that express will
+pass into this route handler and here
+we're going to use the movies template
+and to that template we're gonna pass
+this object this object is where we're
+going to end up passing all of the
+documents that we got back from our call
+to find here those documents will be
+passed in as the output of this to array
+method that we're calling on the cursor
+that we get back from find as a result
+of having made this empty dot query now
+in an ordinary application you probably
+wouldn't make a query like this but for
+purposes of simplicity what we're saying
+here is just give me all the records
+that are in our movies collection
+because I'm going to use them to render
+a response to the client ok let's take a
+look now at the movies template and you
+can see that it's quite a bit more
+complex than the one we looked at before
+for a couple of reasons
+one I wanted to give you just a taste
+for what's possible with this template
+system and I wanted to give you some
+exposure to the syntax for writing
+templates in case this is something that
+you're seeing for the first time or
+don't have a lot of experience with now
+for this part here I did that just so I
+can use Helvetica as my font and you can
+see that I'm simply embedding a style
+sheet here we're going to have a section
+of the page essentially the page is
+going to be titled by movies but then
+we're doing this kind of cool thing
+we're going to be using that movies
+field passed here as part of the object
+that we're passing to render and we know
+this is an array because that's what two
+array produces and passes on here this
+particular tag in our template is just a
+for loop much like you would see in a
+variety of programming languages this is
+actually a for each loop this is saying
+give me all the movies one at a time
+from that array that we passed into this
+template so here what I'm doing then is
+just creating an unordered list and what
+I'm going to do is list the title and
+year for each movie
+and link each movie to the appropriate
+page on the IMDB movie site using the
+IMDB field so this is pretty cool
+because we're using a variable here
+embedded within this URL and each one of
+these variables is actually pulling a
+field value out of a JavaScript object
+okay now one thing I did forget to do
+here actually just to have good HTML
+syntax this actually wrapped the list
+items in an unordered list tag okay so
+now let's just go back to our app and
+finish up our discussion of the app
+itself after we've specified our routes
+I'm simply going to kick off the server
+and remember this is all happening
+inside the callback for our connect
+request to the MongoDB database so
+what's going to end up happening here is
+after that connection is made I'll kick
+off the server because of the way we've
+set up these routes the one route we're
+really supporting has the database
+connection in scope so anytime it's
+called by a client it can use that
+connection to make a query to the
+database and of course there's a lot of
+error handling and other sort of
+framework that we would really want to
+put in for a nice robust production
+application this is just a simple
+example okay so now let's go and run
+this app but what I'll need to do first
+of course is install my dependencies now
+in this case what I've done is created a
+package JSON file that will tell NPM
+what dependencies this app has so I can
+simply call NPM install and all of the
+dependencies will install based on
+what's here in my package JSON file okay
+so let's run the app first and then
+we'll come back to this and talk a
+little bit about the package.json file
+okay so we successfully connected to
+MongoDB and we've got our server
+listening on port 3000 so now if we go
+to localhost port 3000
+pretty cool huh got our movies listed
+out and each one of these is linked to
+the appropriate page on IMDB okay so now
+let's go back to our package that JSON
+file and walk through that just a little
+bit as we
+about this lesson so I'll kill the
+server and load up our package that JSON
+file so if you look at the NPM
+documentation you can get all the
+information you need to understand how
+to write your own package files the
+reason why I wanted to include one here
+is because for the remainder of the
+course will be providing package JSON
+files with handouts homework assignments
+etc and I want to make sure you
+understand what's going on
+so the key piece here is this
+dependencies field within this file and
+you can see here that we're festa fiying
+that we have dependencies on Express
+consolidate nunchucks and MongoDB and
+the way I express dependencies is using
+name value pairs the name being the name
+of the NPM package and value being what
+version I'm interested in having now
+because all of our dependencies are
+moving that is the development is
+ongoing in order to make sure that they
+don't move too much on us and break our
+apps I like to pin them pretty close to
+the version I use to develop any
+examples or handouts so what this syntax
+means here with the tilde is this is the
+version that I want okay it's okay to
+install patch versions that is I could
+but don't install 14 to 13 dot two and
+don't install anything greater than 4.13
+so for dot 14 or 15 okay and same is
+true with the rest of these so I'm
+trusting the developers here to not make
+breaking changes when they're basically
+doing bug fixes and using that as a
+means of kind of pinning the
+dependencies for my application so that
+it remains fairly stable okay
+a couple of other fields here basically
+just descriptors name of the project I
+entitled it all together now a version
+brief description and then my name and
+the license we're distributing this with
+so there you have it
+we've taken a look at an app that
+combines routing with Express templating
+using nunchucks all wired together using
+Express and writing an application
+backed by MongoDB in nodejs
+using the node.js driver
+
+
+
+
+---
+
+### get requests 2
+https://youtu.be/DZkLTikYqc4
+
+
+all right so we've talked a little bit
+about building an application on nodejs
+and the different libraries available
+now let's talk a little bit more about
+Express so this section is optional but
+it's for anyone who wants to get a
+little bit more details of how to use
+Express but it's not required for this
+course and you can actually complete the
+course without these two lectures so
+this is just for any added benefit so
+what we're gonna cover in this lecture
+our URL parameters and get variables so
+there are two ways that Express can
+actually get data from the client side
+of an application so this is our example
+application that we'll be using in this
+lesson and we see here that it's running
+on localhost 3000 but it does not have a
+route registered for slash so let's
+actually navigate to a specific resource
+and see what we get so I'm going to
+navigate to slash name here we get a
+message we say hello name here are your
+get variables so what's happening here
+is that this part of the URL is actually
+being read by our application and
+printed back to us right here so we see
+it's printing out our get variables we
+don't actually have any get variables so
+let's actually add some so let's add get
+var 1 equals value so there we see we
+ever get variable give our 1 equals
+value after our URL and down here we see
+that we get our value printed back to us
+so get another get variable and we see
+that gave our 2 equals value to let me
+see that down here so note that this is
+only because we actually are looking for
+get var1 and get far too in our
+application so if we try to enter
+another get variable we see that it has
+no effect because our application is
+only looking for get far one and gave
+our two it's not actually looking for
+not found all right so this is what
+we're trying to do let's now take a look
+at the example application code alright
+so this is our example we have up here
+our modules that we're using so we're
+using Express and we're using
+consolidate just to get our templating
+library and here we're registering our
+templating library registering our
+router registering some error handling
+which I'll talk about in a minute
+so let's take a look at our route so if
+we go all the way down to the bottom we
+can see we're registering just one route
+colon here actually has a special
+meaning in a route that you register
+with express what the colon is saying is
+take this part of the URL and store it
+in a variable called name so any
+variable captured this way is actually
+put in the request inside the params
+object so if you want to access name you
+say request dot params to get the params
+object which has all the parameters that
+you captured in the URL and dot name to
+get the name you can actually capture
+multiple parameters in here so we could
+have colon name / colon something else /
+colon something else they would all be
+put in request up params so now what
+about gift variables so if we look at
+the next two lines this actually shows
+how to extract get variables in Express
+so the get variables are actually put in
+request query so here we're saying will
+accept to get variables get vert one and
+get fair two and just put them in these
+local variables finally down here we
+render the result using a template that
+I'll show you in a moment that has name
+give everyone and give air to so let's
+take a quick look at the template
+alright so this is our template here we
+just say hello name and if you remember
+that was our parameter in the URL and we
+just say here your get variables and
+print out all the get variables so let's
+go back to our example so one thing I
+want to mention here is that we can
+still actually specify other get
+variables and they'll still be put in a
+request stop query but the only ones
+we're actually looking at are guitar one
+and give our two which may actually be
+undefined so one thing you could do in
+this case if this is what you were
+looking for is just check if it's
+undefined set it to some default value
+you could also iterate the request that
+query object to see all they get
+variables that the user said and put
+them out for debugging purposes but
+that's the basic idea behind get
+variables all right so let's run this
+and see how it looks
+so we have our Express server listening
+on port 3000 so let's go open that in
+the browser so we got a local as 3000
+and we see cannot get slash so the
+reason for that is we actually specified
+capture the result after the slash and
+name which means we actually have to
+specify some kind of path so if we go
+back up here and do slash Shawn say
+hello Shawn here you're get variables so
+notice we didn't actually check if our
+get variables were undefined
+and we just sort of put them in our
+template so in this case since they're
+undefined we just see two empty bullets
+so we can go up here and add our get
+variables so it was get far one and now
+we see we have a variable one set in our
+template and we could do the same thing
+and set get apart too
+all right so that's how to get get
+variables and URL parameters using
+Express so here's the URL parameter here
+are the to get variables
+
+
+
+
+
+
+
+
+
+---
+
+### post requests 3
+https://youtu.be/rGWwQE89reU
+
+alright now let's talk about handling
+post requests and Express so what we
+have here we have an example application
+with a simple form that allows a user to
+pick their favorite fruit and then
+submit the form which will generate a
+post request to our Express app so if we
+click here you can submit it this will
+generate a post request to slash
+favorite fruit and the Express
+application will reply with your
+favorite fruit is Apple so this is an
+example we'll be discussing and we'll
+see the code behind this so let's take a
+look at our example code alright so this
+is our example of using post variables
+with Express and up here we have our
+modules we're using the same template
+again j'en we have this extra line here
+which I'll talk about in a bit and we
+have our error handler which I'll
+actually talk about in this section so
+let's take a look at our routes all
+right so we actually have two routes
+here one is it get and one is a post
+so basically when we get slush we render
+our fruit picker template which I'll
+show you in a bit
+but basically this is just a form it
+allows users to select what their
+favorite food is among the choices given
+here so here we have fruits which is an
+array apple orange banana peach this is
+going to be posted in the fruit picker
+form so when the user submits the form
+it'll submit a post request to slash
+favorite fruit so this is actually where
+we handle the form submission so the way
+we handle post requests is by accessing
+the variables in cuesta body so here we
+say favorite equals request stop body
+dot fruit but there's something you
+actually have to pay attention to here
+so we're looking this request stop body
+object but it's only populated if we
+register the body parser middleware so
+if we go up here near the top you notice
+that I have this extra line app dot use
+Express stop body parser so what this is
+doing is it's registering middleware
+with express so what does that mean so
+when you register a middleware function
+basically telling Express I want to do
+this extra processing
+and since we have this extra processing
+before opt-out router the processing and
+expressed up body parser will happen
+before we hit any of our routes so AB
+dot router is sort of a way to specify
+when you want your routes to be called
+so Express actually has different
+middleware for different purposes but in
+this case Express stop body parser for
+our purposes will parse the body of the
+request and populate request dot body so
+we can access it in our route below
+alright so this is kind of a small
+diversion but I just wanted to show you
+this for reference if you want to see
+the different kinds of middleware
+available for Express you can actually
+go to Express j/s comm which is the home
+page look at the API reference and go
+down to middleware and you can see all
+the middleware available so right here
+we have body parser if you're just using
+and body parsing middleware it actually
+wraps a few other functions but for our
+purposes we just care about the fact
+that it's parsing our post variables all
+right so that's where you can go for
+reference if you're ever wondering what
+middleware to use alright so we've
+registered our body parts our middleware
+which means that down here we can just
+use request stop body dot fruit however
+if the user didn't pick one and
+submitted the form anyway fruit will be
+undefined so we actually have to check
+for that and we'll talk a little bit
+about this special error handling later
+if the user did pick a fruit we say a
+response not send your favorite fruit is
+and then whatever the favorite fruit is
+that they picked all right so before we
+run it let's just take a quick look at
+our templates so here we have fruit
+picker dot HTML basically just a form
+and it's iterating over fruits saying
+for fruit and fruits create a new input
+field for each fruit that we passed in
+so this is just our template using our
+fruits array alright so we've run our
+app we have our server listening on port
+3000 so let's go open that in a browser
+alright so here we have our fruit picker
+form
+what is your favorite fruit and let's
+just pick the first one submit and it
+says your favorite fruit is Apple so
+let's go back to our application so I
+want to talk a little bit about this
+error handler function so in express you
+can register functions specifically to
+deal with errors the way you do that is
+you actually specify a function with
+four arguments first the error object
+then a request object then the response
+object then this next callback which
+we'll talk about below alright so if we
+go back to our route you can see that we
+have a request object the response
+object and this next callback so this
+third argument next is actually a
+function passed in by express along with
+the request and response objects and one
+of the things we can do with it is we
+can actually use it to handle errors so
+here we say if typeof favorite equals
+undefined we say next error please
+choose a fruit so by passing an error
+object next we're telling you express
+that we've had some kind of error and
+what expressed does at that point is
+tries to handle the error the way it
+does it is by looking for any error
+handling middleware that we may have
+registered earlier so if we go back up
+here a little bit you can see this is
+our error handling middleware and when
+you call next with an error object
+Express we'll say okay we've had an
+error let's find any error handling
+middleware that's been registered and
+call it so what this will do is a log
+our error message it'll log the stack
+trace for our error it'll return a
+server error status and it will render
+the error template to the user so let's
+try that out
+so we have our server listening on port
+3,000 again let's go back to our picker
+page now what happens if we submit
+without picking any of our fruit all
+right
+so here we actually have an error logged
+from the server because we called next
+with our error object and express new to
+call our error handling middleware so if
+we go back here we'll actually see this
+huge stack trace because in our error
+hand like middleware we also printed out
+a stack trace in addition to render
+the error page alright so that was a
+quick introduction to using post
+variables and Express using some basic
+middleware and registering middleware to
+handle any errors that you have
+
+
+---
+
+### final project mongomart
+https://youtu.be/C_1gx_Td20A
+
+okay the last thing I'd like to talk
+about in this week's material is the
+final project for this course at the end
+of the course we will complete an
+e-commerce application called mango Mart
+in mango Mart you can chop for a variety
+of MongoDB branded items this
+application allows us to dive into
+schema design including indexes
+aggregation questions of MongoDB
+deployments involving replica sets and
+charted clusters and we'll get to look
+at cool features of MongoDB like text
+search and even geo search where we'll
+set up the ability to search for stores
+by location of course in order to do
+this you'll also gain experience with a
+number of associated technologies that
+we've introduced in this week already
+web frameworks and the like for the
+nodejs platform we've experimented with
+this project a number of times and each
+time students absolutely love it we hope
+you will as well it's a great way to
+really solidify your understanding of
+MongoDB and it's a lot of fun to build
+
+
+---
+
+hw 1 1
+
+https://youtu.be/sA-iH3IJ72o
+
+
