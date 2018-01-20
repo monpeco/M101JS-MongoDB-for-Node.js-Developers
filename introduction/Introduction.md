@@ -677,3 +677,449 @@ documentation for some hints on other
 aspects of the query language
 
 ---
+
+### Installing nodejs
+https://youtu.be/h-NInlnOzLg
+
+okay so now let's briefly cover how to
+install nodejs on your machine you can
+get node from the nodejs org website
+please download the latest for dot X
+release of nodejs now the site should
+detect your operating system and make an
+appropriate installer available for you
+as it has for me given that I'm running
+a 64-bit version of OS 10
+so I'll download the for that X
+installer for my platform I can then go
+through the Installer setup and finally
+I get a message that says notice
+installed successfully I need to make
+sure that user local bin is in my path
+the installer for your platform should
+set you up correctly if it doesn't
+please post a message on the forums and
+we'll try to get you the help you need I
+can check to make sure that node
+installed correctly by simply opening a
+terminal window and typing node and the
+result is that node does start up and
+drops me into the node interactive shell
+now alternatively from the downloads
+page you can find all available
+installers so Windows and Mac folks can
+find all available installers for those
+on linux and other platforms who may
+want to use a package manager to install
+node.js
+click on the installing nodejs via
+package manager link and follow the
+instructions for your platform now note
+that the installers install both no js'
+and npm the nodejs package manager
+as a heads up will make extensive use of
+NPM throughout this course
+
+---
+
+### hello world nodejs
+https://youtu.be/Fv5Q_02BKrM
+
+all right so now let's write a simple
+hello world program using note J s so
+the first thing we want to do is make a
+new directory let's call it hello world
+now let's just start writing our first
+node.js application so I'm just going to
+use vim to write this but you can
+actually use any text editor that you're
+comfortable with so let's open a new
+file call it app KS and our first
+application will be really simple we'll
+just log to the console hello world so
+now with the way we run this as we say
+node and give it the name of our
+application and it prints out hello
+world okay so this is looking good it's
+our first application but now let's make
+an actual web server with this so in
+order to make this into a web server
+let's delete this line and now let's say
+for HTTP equals require HTTP so HTTP is
+actually built into nodejs
+it's a library and what we're doing up
+here is we're saying we need to use this
+library require HTTP and store a
+reference to this library in the
+variable HTTP so if we go down here now
+we can save our server equals HTTP dot
+create server and pass it a function for
+what to do when the server receives a
+request and we get a response object as
+well so when our server receives a
+request the request will be in the first
+argument and the object for handling the
+response will be in a second argument so
+what we can do is when we get any
+request we say response dot write head
+status 200 content okay so first we set
+this to set some metadata about our
+response then after we've done that we
+actually send the response by calling
+response to end and send hello world
+what this does is it specifies what to
+do when our server receives a request
+but the one part missing here is telling
+our server to listen for incoming
+connections so now let's listen on port
+8000 and let's log to the console a
+friendly message telling the
+sir that the server has successfully
+started so now will actually run this by
+calling node app KS you can see our
+server is running on localhost 8080 and
+we get hello world so that is the first
+example of using node.js to write a
+simple server notice we use the HTTP
+library but actually no js' allows you
+to interact with the client on a number
+of different levels and if you wanted to
+you could actually just open a raw TCP
+connection and interact that way for
+this course we'll actually be using a
+framework called Express so that's one
+level above HTTP and actually handles a
+lot of the routing and details of HTTP
+for us all right so those are the basics
+of setting up a simple server running on
+node.js
+
+
+
+---
+
+### intro to npm 2
+https://youtu.be/KkWoaHOtGnk
+
+all right so this is an introduction to
+NPM NPM is the package manager for
+nodejs so we're going to talk a little
+bit about packages how to use them and
+how to install them if you look in this
+directory we have two files we have our
+app and we have this file called package
+dot JSON so let's just get started
+and let's just run our app alright so we
+have a problem cannot find module
+Express so let's look at our app and try
+to figure out what's going on so we have
+these require statements these required
+statements are actually how we include
+external libraries in a node.js
+application so here we're actually
+requiring express requiring consolidate
+and requiring MongoDB so we actually
+depend on all of these libraries so even
+though our application doesn't do
+anything we're depending on all these
+libraries for this example so the first
+thing we can do to solve this problem is
+use NPM install Express so we saw that
+the error message was cannot find module
+Express so let's just install that and
+see if it works all right so we just
+installed Express now let's try to run
+our application so we have another issue
+cannot find module consolidate so we go
+back to our app see we don't just
+include Express we require consolidate
+and MongoDB so we could actually install
+each of those individually or we could
+use our package JSON file so a lot of
+node.js applications come with package
+JSON file which basically has some
+metadata about the package including its
+dependencies so if we look in here we
+can see the name intro to NPM you can
+see the version and we can see the
+description of the package and the entry
+point of our application and a list of
+dependencies with their versions so
+let's see what we can do with this file
+so NPM actually knows about this package
+JSON file so if we just type NPM install
+NPM will actually install automatically
+the packages in the package JSON file so
+now if we try to run our application it
+run successful
+one more thing that I want to note about
+NPM is that in its tells local modules
+in the node modules directory so you'll
+have to install the dependencies locally
+for all of our examples and stencil code
+that we provide even if we don't show
+that step in every video you can
+actually install them globally but for
+now we'll just cover installing them in
+the node modules directory for each
+application that you write so we can
+take a look just to verify that we've
+installed the modules that we expect we
+can see you consolidate Express and
+MongoDB so that's a basic introduction
+to the node.js package manager and that
+should be all you need to complete this
+course
+
+
+
+----
+
+Introduction to the Node js Driver
+
+
+
+so now we're going to talk about
+building our first node.js application
+that uses MongoDB and the MongoDB nodejs
+driver what is the nodejs driver what
+does it mean to be a driver for mongodb
+this is a little bit of our overall
+architecture we have our mango d server
+listening here for incoming connections
+the server expects to communicate using
+MongoDB zweier protocol represented by
+this line here and exchange data in
+beasts on now a driver is actually a
+library in a specific language in this
+case JavaScript the driver communicates
+with the MongoDB server using the wire
+protocol it handles things like opening
+sockets detecting errors and managing
+connections to replica sets in general
+the driver handles a lot of things
+behind the scenes that you don't want to
+have to deal with in your application
+code the idea is just that you include
+the driver for mongodb the nodejs driver
+in this case and use it in your
+application just like you would any
+other library so let's take our first
+look at the node.js driver here we have
+our apt jas file we'll work through this
+example application as we learn to use
+the nodejs driver before we get started
+let's actually try to run this app so i
+type node fjs when we try to run it we
+can see that there is a missing
+dependency in particular node cannot
+find the MongoDB module so I did this to
+illustrate that the manga to be driver
+for nodejs is actually a module all
+nodejs MongoDB applications have this
+module as a dependency at the moment we
+don't have the MongoDB nodejs driver
+installed for our application so in
+order to run this app we need to use NPM
+to install the driver when you do this
+you'll get this morning this morning is
+okay to ignore if you'd like to read
+more about what the cause of this is you
+can visit the node j s driver
+documentation in short this is something
+we only need to deal with if we actually
+need to use kerberos authentication and
+we're definitely not doing that in this
+class alright so now we have our MongoDB
+driver installed if we look in the
+application direct
+we can see that we have a node
+underscore modules subdirectory and we
+can see that within that directory is in
+fact our MongoDB module now let's run
+this app ok and this application did
+what was expected which is to print out
+the titles of each of the movies found
+in our video movies collection now let's
+take a look at the code for this
+application so let's start with the
+require statements you can see here the
+dependency on the MongoDB driver
+specified in this require statement this
+module exposes the mango client object
+and we use this object then to connect
+to our mongo DB server now it's common
+to us use the assert module distributed
+with nodejs and we're using it here just
+to do a little bit of error checking ok
+let's get to the meat of this then in
+order to use the MongoDB nodejs driver
+it's important to have a solid
+understanding of the asynchronous nature
+of i/o in JavaScript including database
+requests now the mango shell is
+synchronous meaning that when you issue
+a fine command it blocks waiting for the
+command to return before continuing this
+is not the case with an oj s driver
+whether you're doing a query as we are
+here in the call to find or just setting
+up a connection to the database as is
+common in JavaScript applications the
+nodejs driver we're going to use is
+designed so that its methods function
+asynchronously what this means is that
+instead of waiting on a return value
+from any methods we call we instead pass
+in a callback function now I'll try to
+unpack this idea of callbacks in this
+lesson but if this is the first time
+you're seeing callback functions I
+strongly recommend that you dive into a
+JavaScript resource outside this class
+or another resource to learn the ins and
+outs of callbacks so the way the connect
+method works is we pass as its first
+parameter a connection string
+essentially this says we're going to
+connect to MongoDB on localhost at port
+2701 727 017 is the default MongoDB port
+and we want to connect to the video
+database the callback
+function that we pass as the second
+parameter is going to handle the result
+of this connection operation so when the
+operation completes whether it was an
+error or a successful connection this
+function will be called in the case of
+an error this assertion will fail and
+execution of this particular script will
+terminate with an appropriate assertion
+failure message if it succeeds and
+that's what we would expect here if
+we've got them on going to be server
+running on localhost at 27 017 then the
+connection handle will be passed as the
+value for the DB parameter now
+throughout the rest of this callback we
+can use this DB handle to interact with
+the database okay so in the case where
+we successfully connected the database
+we're going to print out this log
+message and then immediately do a find
+now there's a whole bunch of things we
+need to talk about with regard to this
+fine call here let me start first by
+saying that again we're going to be
+passing a callback function okay and the
+thing to keep in mind here is that
+within this function when we do this
+call to find because this happens
+asynchronously again we're not waiting
+on a return value for the call to find
+instead we fire off a thread that will
+handle this request and pick up
+execution in this callback once the
+request finishes but that threat is
+blocked until the find command returns
+the main thread of execution or i should
+say the thread of execution for this
+particular call back the one we begin
+here will continue in parallel so what
+will happen is we'll actually end up
+printing out this log message before
+anything inside this function happens
+okay so let's talk about find here a
+little bit now this syntax should be
+familiar to you here we're simply using
+the DB handle specifying using the
+collection method here specifying that
+we want to issue a query to the movies
+collection and we're going to use the
+find command now note here that we're
+passing an empty document meaning that
+we're not applying any constraints on
+documents that are matched and as we
+know the effect of that will be that we
+will get all of the documents in this
+collection
+resultset now remember that find returns
+a cursor so I don't actually want to
+interact with the cursor here instead
+I'd prefer to just use the native
+JavaScript for each function which works
+with arrays so what I'm going to do is
+on the cursor that's returned from find
+I'm going to call the to array method
+alright what's going to happen there is
+that this method will consume the entire
+result set and produce an array that
+then gets passed to this callback now
+again if there was an error in this call
+then the error object would be passed to
+this parameter in the case of success
+the result of calling to array is going
+to be passed to the second parameter now
+this is a common idiom in JavaScript
+that for callbacks the first parameter
+is where air objects will be passed and
+the second parameter is where the result
+of whatever operation we're waiting on
+will be passed in this case to array
+produces an array so it is that array
+with our entire result set in it that
+will be passed to the docs parameter
+then what we're going to do here is
+using the for each method for arrays
+loop through the docs and one at a time
+print out the title for each document in
+our result set again here we're using a
+call back to do this the last thing I
+want to call out here with regard to the
+execution of this function is that doc
+is just going to be a JSON object here
+because we're working in the JavaScript
+language and the nodejs driver is going
+to take the beasts on data that it gets
+back from MongoDB and map it to native
+JavaScript data types so what's going to
+happen here is that we can use the
+standard JavaScript notation for
+accessing properties of objects to get
+ahold of the title for the document each
+time through this loop finally here
+we're going to use this DB handle and
+we're going to close the connection that
+was passed in here this will terminate
+this callback and what's interesting
+here is that the threat of execution for
+this callback will already have
+terminated executing all of the
+statements it was designed to run ok so
+that should give you a pretty good idea
+of how to
+get started using the nodejs driver for
+mongodb we talked a little bit about the
+fundamentals establishing a connection
+and issuing a command we also talked
+about how we stipulate what database we
+want to talk to and the syntax for
+accessing a particular collection
+finally we spent a fair amount of time
+talking about callbacks and multiple
+threads of execution that are going to
+be fired off as this application runs so
+now let's run this app again and with
+what we now know about how it works
+we'll have a good idea for how the
+results are produced last thing I want
+to point out here is that as promised
+this log message which we find here
+prints out before any of the titles for
+the three documents in the movies
+collection again because when this
+command is issued this thread of
+execution fires it off and moves on
+executing the next statement
+
+
