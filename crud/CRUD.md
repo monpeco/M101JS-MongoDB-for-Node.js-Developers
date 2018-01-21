@@ -1124,3 +1124,112 @@ strongly encourage you to dive deeper
 into the use of this operator there's a
 lot of flexibility here
 Inglés (generados automáticamente)
+
+
+---
+
+
+### array operators
+
+https://youtu.be/npIsBIW7-ew
+
+so another type of operator that we need
+to look at are those involving arrays or
+operators that are designed to work with
+array valued fields so first we'll look
+at dollar all now dollar all is used to
+match array fields against an array of
+elements in order for a document to be
+returned all of the elements we're
+looking for must be included in that
+array field let's take a look at an
+example so here I'm going to match
+against the genres field I'm using the
+dollar all operator note that it's value
+must be an array and I'm saying give me
+back only documents where among the
+genres listed you find comedy and crime
+and drama so we can see that this is as
+expected as are the genres for this
+document and for this document and as we
+move through the rest of the returned
+results we see that all of them do in
+fact contain comedy crime and drama
+among the genres listed so that's dollar
+all now let's take a look at dollar size
+now dollar size allows us to match
+documents based on the length of an
+array now the countries field in this
+particular dataset stipulates the
+country of origin for a movie the
+countries in which the movie was filmed
+so this query will identify movie
+documents that were filmed in just one
+country and as we look at our results we
+can see that in fact just one country is
+specified for each one of these
+contrasting that with a number of films
+that we've seen where there's typically
+the US and a European Asian country are
+both listed as well as movies from other
+parts of the world so that is dollar
+sized now let's take a look at dollar
+elem match and for this we'll need to do
+just a little bit of head-scratching so
+what I'd like you to consider is the
+addition of one more field to our movie
+data a field that reflects the
+box-office revenue for all of the
+countries in which that data is
+available so imagine that every document
+in our movie details collection
+contained such a field that has an array
+as its value with embedded documents as
+entries listing the country and the
+revenue in millions for each of those
+countries elem match is designed to deal
+with fields such as this
+imagine that we want to do a query like
+this now I'll actually take a look at
+this right here next to our data just so
+we can talk about them together so let's
+imagine now that we'd like to match all
+documents where the revenue for the
+country
+UK is actually greater than 15 million
+note that a movie details document with
+this box-office value would not in fact
+match those criteria what we might think
+would be a query that satisfies this
+objective would be something like this
+where we simply specify a country UK and
+revenue greater than 15 the problem is
+that the semantics of this are such that
+Bango DB is simply looking for a
+box-office value that satisfies these
+two selectors so in this particular case
+a document having these values would be
+retrieved because there is an element
+where country is UK and another element
+where revenue is greater than 15 that
+being this one here for the u.s. again
+remember we're matching on box-office as
+a whole for this query against this
+array field it's this type of situation
+in which Ellyn match plays a role alum
+match requires that all criteria be
+satisfied within a single element of an
+array field and the syntax of element is
+as follows we specify the name of the
+field we're matching against and then
+use the LM match operator specifying the
+criteria against which we want to match
+each of the elements in the array
+matching only documents where both these
+criteria are met within a single element
+of the box-office array for a document
+and that is the element operator and a
+wrap up of our array query operators
+
+
+
