@@ -958,3 +958,91 @@ for identifying every one of the beasts
 on types here we just took a look at
 string
 
+---
+
+### logical operators
+
+https://youtu.be/4ozUoLcznq4
+
+in this lesson we're going to consider
+the dollar or and dollar and operator I
+also want to make you aware that there
+is a dollar not and dollar nor operator
+dollar nor being the inverse of or and
+not being logical not in this lesson
+though we'll just look at or and and so
+let's take a look at an example using
+the dollar or operator what we're going
+to do here is look for documents based
+on their rating using both the tomato
+meter which is produced by the reviews
+of the general public who care to
+comment
+and the Metacritic score which is a
+score generated based on the reviews of
+movie critics now the assumption baked
+into this query is that the general
+public are easier graders than movie
+critics let's look at the syntax here so
+dollar or takes as a value and array in
+which we specify criteria in this case
+we're using greater than 95 for tomato
+meter and greater than 88 for Metacritic
+now let's take a look at the results we
+can see that this document actually
+matched both and then here's one where
+the critics were pretty far apart from
+general public this being for the movie
+Groundhog Day
+so again dollar or takes an array as an
+argument the elements of the array are
+criteria any one of which can be true in
+order to match a document that will be
+returned by this query now let's look at
+the and operator now something that I
+want to point out about and is that it's
+necessary only in certain situations so
+for example we could say and here and
+restrict this only to those movies where
+both the Metacritic score and the tomato
+meter score were high so let's look at
+an example of that so now only movies
+we're both Metacritic and tomato meter
+are high are being returned to us but
+the thing to note is that and operator
+in this particular query is superfluous
+the reason being that the query we just
+did is equivalent to this one because
+again criteria is specified in our query
+document to find our implicitly and it
+together and you can see we're getting
+the same documents back
+so why is there an and operator well the
+reason is because there are some use
+cases in which we actually need to
+specify the same field value more than
+once if I were to try to do this using
+just a simple query document I wouldn't
+get the intended results because the
+keys in a JSON document must be unique
+and I would be using the same key more
+than once the dollar and operator allows
+me to specify multiple constraints on
+the same field so in this case I'm
+saying give me all documents where the
+Metacritic is not equal to null and
+where it exists so this type of query
+might be useful for an application in
+which we know we've got a little bit of
+dirty data where possibly there are
+fields that have a Metacritic value that
+is equal to null when what we really
+want is for all of our medical it occurs
+to actually have a numeric value of some
+kind and so if I execute this then I do
+in fact get documents that have a valid
+value for Metacritic and where the
+Metacritic field actually does in fact
+exist so again remember and is used in
+situations where we need to specify
+multiple criteria on the same field
