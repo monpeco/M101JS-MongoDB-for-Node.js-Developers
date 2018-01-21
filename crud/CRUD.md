@@ -1233,3 +1233,535 @@ wrap up of our array query operators
 
 
 
+### Updating Documents
+
+https://youtu.be/qrlqLZl4s4E
+
+okay so we've talked about creating
+documents and reading documents now
+let's take a look at updating documents
+and if you remember there are some
+situations in which updates can actually
+end up creating documents as I mentioned
+earlier MongoDB provides three different
+update commands we'll look at each in
+turn
+they are update one update many and
+replace one we'll look at each in turn
+so first let's go to the shell and what
+I want to demonstrate is update one now
+before we do that let's remind ourselves
+what kind of documents were dealing with
+here so again working through my movie
+details data set I'm gonna do a find for
+the Martian hands pretty that up so you
+can see here that this particular movie
+is not currently listing any awards nor
+is there a poster so a lot of these
+movies let's take a look at something
+else contain a field called poster that
+links you to the movie poster for this
+particular movie now the Martian doesn't
+contain a poster nor does it contain
+awards I'm going to use this as an
+example to demonstrate the use of the
+update one command in many applications
+you're going to have situations in which
+you need to update existing data this is
+true in MongoDB applications as well as
+in applications backed by relational
+databases in MongoDB this is a
+straightforward process in most cases
+because all we have to do is add a field
+in a relational database you'd have to
+do an alter table command or something
+like that
+here we can just drop in a poster field
+even if there are no other documents in
+the collection that contain that field
+there are of course but the flexibility
+is there if we need it so now what we're
+going to do is call the update one
+command on the movie details collection
+and let's talk just briefly about the
+syntax so the basic idea here with all
+three of the update commands is that you
+first specify a filter document or
+selector document as with find this will
+identify the document or documents that
+we want to update now the way update one
+works is it will simply update the first
+document matching our selectors so if
+for example we had put in something here
+like tomato dot meter 100 there'd end up
+being a number of documents that match
+that the first one retrieved by the
+database would be the one that ends up
+getting updated in this case there is
+just one
+that is titled the Martian now of course
+in an application we'd be using a unique
+identifier such as the underscore ID in
+order to distinguish which document it
+is that we'd like to add a poster to I'm
+doing it this way just so it's
+immediately obvious exactly what movie
+we're talking about the second argument
+to update one is where we specify how we
+would like to update the document you
+must apply an update operator of some
+kind and we'll take a look at other
+update operators in this case we're
+using the dollar set operator now this
+operator takes a document as an argument
+and it's expecting a document that has a
+number of fields specified what it will
+do is update the document matching this
+filter such that all key value pairs are
+reflected in the new version of the
+document that's created so in this case
+what's going to happen is that we're
+going to add a poster field and supply
+this URL as the value for that field if
+there was an existing poster field this
+would modify its value to the URL
+specified here okay so let's go ahead
+and run this the response we get back is
+useful in that it tells us that the
+update was acknowledged by the database
+we ended up matching one just one
+document if we had matched more we'd get
+that count here and then we're told how
+many we modified now for update 1 it
+should always be 1 or 0 in this case we
+did end up modifying our the Martian
+movie document let's take a look at that
+document now to see what it looks like
+and you can see that sure enough we did
+in fact add the poster field to this
+particular document update operators as
+you might imagine aren't limited to
+scaler updates like this we can update
+fields with any legal value as a quick
+example let's go ahead and supply the
+awards field for the Martian remember
+that it was missing awards from its
+document so let's take a quick look at
+an example in this case we're going to
+update the awards for this document
+because as we noticed earlier they are
+currently missing from this document if
+we query again for the Martian we see
+that in fact the awards field has been
+added with the value of this nested
+document that we supplied so that's a
+nice initial introduction to update one
+what I'd like to do now is give you a
+sense for the different types of field
+update operators that we have available
+to us we used set this completely
+replaces or
+each field specified in its parameter as
+we saw here and in the earlier find one
+that we did with whatever value we
+supply there's also an unset operator
+and this will completely remove the
+field that we specify from the document
+others here include min and Max this
+allows us to update a field based on
+comparison with another value taking
+them in of the two values or the max of
+the two values and as we scroll through
+here we can see there are a number of
+other operators I'll leave it as an
+exercise to you to investigate what
+other operators are available they're
+all fairly self-explanatory and there's
+good documentation on each one of them
+so let's take a look at a couple more of
+these operators as we continue moving
+through our examples here updates have
+several different use cases they're used
+to correct errors and over time keep our
+data current for movie data much of
+what's there is static so we've got
+directors authors titles etc other
+content such as reviews and ratings will
+need to be updated as users take action
+creating new reviews or ratings we could
+use set to make these kinds of updates
+but that's an error-prone approach it's
+too easy to do the arithmetic
+incorrectly or make other types of
+errors instead we have a number of
+operators that support numeric updates
+of data so as I mentioned we've got min
+and Max there's Inc - increment there's
+an increment operator and there's a
+multiplication operator let's look at an
+example of using increment operator to
+update reviews so here what we're going
+to do is again working with the Martian
+we're going to increment the tomato
+reviews count by 3 and the tomato user
+reviews by 25 so this value and this
+value will be modified looks like it was
+a success let's take a look at the
+document again ok and we can see that in
+fact we did add 3-2 reviews and 25 to
+user reviews now as you might imagine
+there are a number of situations in
+which we want to update array values I'm
+going to be provides a number of update
+operators for arrays in addition to
+those it provides for scalar fields so
+for array fields I can treat them as a
+set and update
+with new values only if the value isn't
+already contained in the array I can
+pull off the first or last item of array
+depending on how on my parameters to the
+pop operator I can remove all values
+that match some criteria and of course I
+can push on new values so again I
+encourage you to take a look at the
+documentation for array update operators
+familiarize yourself with their
+functionality
+by working through a few exercises let's
+take a look at a couple of examples in
+which we're gonna need to update array
+fields now for this I'd like to take a
+look at another collection that I don't
+believe we've seen yet that being a
+reviews collection this is simply a
+collection of reviews for movies in our
+data set for most web applications we
+have a desire to structure our data in
+such a way that we can get all the data
+we need to render an individual page
+with this few database queries as
+possible for data like movies most
+applications will want to display
+reviews on the page together with data
+such as we're seeing here what we
+recommend in a lot of situations like
+that is that we actually embed some
+fraction of the reviews for a movie a
+product etc in documents together with
+the rest of the data that will need to
+be rendered on the page so the type of
+scenario we're going to set up is one in
+which will maintain say the five most
+recent reviews for each movie and go
+ahead and render those on the page and
+then if people want to see the rest of
+the reviews then we can do a separate
+page load that will require a query to
+the reviews collection to pull in the
+rest of the reviews so we'll keep the
+most recent reviews together with the
+data for the page view for a movie and
+again this is in a hypothetical
+application we're not actually going to
+build that here in this lesson I'm just
+trying to set an appropriate context for
+some of the things that we're talking
+about here so what we might do for
+reviews is something like the following
+let's take a look at the effect on our
+document and we can see that what we've
+done is actually added a new field it's
+an array field and it contains one
+review at this point okay now let's take
+a look at the command that we used to do
+this okay so let's see if we can get a
+better view on this command here we go
+I'll just copy it in here so
+what we're doing here again filtering on
+the Martian then what we're doing is
+using the push operator now prior to
+executing this update this movie did not
+contain any reviews but following with
+the general pattern in a MongoDB query
+language even though the field doesn't
+already exist if we try to add something
+to it MongoDB will simply create the
+field so in this case the result is that
+we'll end up creating a reviews field
+that reviews field will be an array
+field and we'll push on this review
+document as the first element of that
+array over time we'll end up adding
+additional reviews to this document here
+I just added several others let's take a
+look and we can see now that our movie
+the Martian contains a number of
+different reviews ok so let's take a
+look again at the command that we used
+to do this and I'll just drop in a piece
+of the command here so again we're using
+push and as expected we're pushing on to
+the reviews field but we're adding this
+dollar each modifier some of our update
+operators particularly those having to
+do with arrays have modifiers associated
+with them this modifier says that we
+should push on each one of these
+documents as an individual element of
+the reviews array if we don't use dollar
+each then what happens and you can see
+where we would need both types of
+functionality but if we don't use dollar
+each then what happens is the entire
+array that we specify in our call to
+push will be added as a single element
+in the array so we would have an array
+that then had a single element that was
+itself an array it's not what we want
+here we want a nice flat array
+containing all of our reviews while
+we're on the subject of modifiers let's
+talk about one more that's going to be
+important I mentioned that we just want
+to keep five reviews in our document
+details now one way we could do that is
+every time we get a new review delete
+the oldest one of the five from the
+document and add the new one this type
+of behavior is common enough that we
+actually support this directly in
+MongoDB the slice modifier for push has
+to be used with dollar each
+it says is go ahead and push on
+everything that's listed here in the
+value for dollar each but keep just five
+of the elements in the array now
+depending on whether there's a positive
+or negative value here
+we're either keeping the last five or
+the first five I want to keep the first
+five because I'm adding reviews as they
+come in and want the five most recent so
+let's go ahead and execute this query
+okay and we can see that we had success
+let's take a look at our doc and what's
+interesting here is that nowhere to be
+found is that update that I just made I
+forgot to do something pretty important
+if I want to ensure that the value I'm
+pushing on goes on the front of the
+array I need to use the position
+modifier for push now you can see that
+the review I just added is the very
+first one listed and what we've got here
+are our five most recent reviews and
+only five reviews the rest that were
+there are eliminated as part of our push
+operation here now for a complete
+solution to this I would also need to
+make sure that when a review comes in I
+am adding it appropriately
+to our reviews collection and creating a
+reference between each review in the
+reviews collection and the document to
+which they refer so that's update one
+we've looked at updates for scalar
+values and for array values and we've
+actually seen an example of updating a
+field that contains a nested document
+we've been using the update one command
+all of these same principles apply to
+update many the difference being that
+update many will make the same
+modification to all documents that match
+our filter so let's take a look at a
+couple of examples for update many so
+what I'd like to take a look at is a
+little bit of a data cleaning example
+now I happen to know that in this data
+set there are some fields in some
+documents that are set to know what I'd
+like to do because this is more the
+convention for MongoDB is for any fields
+that are null I'm actually going to
+eliminate them from the document and you
+can see that in this particular document
+not only is rated null but so is the
+poster field
+and just to give you an idea for why
+update many is handy here I've actually
+got almost 1,600 documents in this
+collection for which rated is set to
+null so what I'd like to do here then is
+update this collection changing all of
+these values for rated it turns out that
+there are actually some movies that are
+listed as unrated and so what I could do
+is something like this using what we
+know so far about how to do updates we
+could issue a command something like
+this so in this case again update many
+we're saying find all documents that
+have a value for rated that is null and
+set rated to unrated in my opinion this
+is the wrong way to go because unrated
+means something different then we simply
+don't know what the rating is which is
+how I'm interpreting null a better
+strategy as I mentioned to simply
+eliminate those fields for which rated
+is set to null now I can do that using a
+command like this in this case I'm going
+to use the unset operator and the unset
+operator will simply take all of the
+fields that I've listed in the document
+that I specify as dollar run sets value
+and will remove them from all the
+matching Docs if I'm doing update one it
+will remove rated from one doc now the
+value that I supply here doesn't really
+matter I just tend to use an empty
+string and we can see that I ended up
+modifying fifteen hundred and ninety
+nine documents okay so this might be a
+little bit unexpected to you but as it
+turns out this is one way in which we
+can query for documents that don't
+actually have a rated field if I
+actually run this query you can see that
+nowhere in this document do we actually
+find a rated field nor in any of the
+other documents that are retrieved so
+now only documents for which we actually
+know the rating whether it's g PG r or
+simply unrated contain a rated field now
+way back when we talked about creating
+documents using insert one and insert
+many I mentioned that there was a third
+way to create documents in MongoDB that
+being the up cert functionality of the
+MongoDB update commands now up certs are
+operations for which if no document is
+fine
+matching our filter we insert a new
+document hence the term up sir as I was
+creating the dataset for this lesson
+I actually made use of the up search
+functionality in MongoDB to create our
+movie details collection so here's an
+example of how I built this collection
+now I did this in a script but I'll take
+a look at the same basic steps that I
+went through here in this example so
+imagine that we have this detail object
+now I just created this by assigning
+this variable detail to the object that
+represents this document in our
+collection now in the script that I
+wrote I essentially looped through data
+that I was bringing into the database
+but wanted to make sure that it didn't
+introduce any duplicate movie entries so
+the way I dealt with that was by using a
+command that looks like this now in the
+movie details collection I called update
+one and as my filter I said okay what I
+want to do here is update any document
+that has the IMDB I do equal to the IMDB
+ID value in my detail document that is
+the movie that I may need to actually
+insert into my database the process that
+I used to grab the data that I wanted to
+put into our MongoDB collection was such
+that I couldn't guarantee only
+retrieving movies I hadn't seen before
+so what I decided to do here then was
+use the set operator and the net effect
+of this is essentially in updating the
+document I'll replace it with
+essentially exactly the same detail
+information what this guarantees is that
+I won't create a second document with
+all of the same detail information in it
+but with a separate underscore ID value
+and again I didn't want to use the IMDB
+ID value as my underscore ID value for a
+couple of different reasons which I
+won't go into now the trick here is that
+I'm using this third parameter up cert
+setting it to true and what this says is
+that if this filter doesn't match any
+documents in my collection that means I
+haven't seen the document before so I
+want to go ahead and insert it the
+effect here then of this update is that
+for those
+situations I will end up creating a new
+document in my collection to represent
+this detailed data that I'm pulling in
+from another source so the basic idea of
+up certs is that you want to make some
+type of update to a document in your
+collection but if that document doesn't
+happen to be there already
+you want to go ahead and create a new
+one using what would have been the net
+effect of the update operation and of
+course if we're creating a new document
+it may be necessary for a MongoDB to
+create an underscore ID field which is
+what happened here so now we've talked
+about update one update many and about
+absurds the last thing I want to address
+in this lesson is our third update
+command that being replaced one now to
+look at this command what I'd like to do
+is revisit our movies collection
+remember this is the collection that
+contains the summary data about movies
+and we'll just pretty that up now in our
+video database we have this collection
+and we have the movie detail collection
+in some cases rather than have two
+separate collections it might actually
+make sense to just have one so imagine a
+scenario in which we had this data
+initially and we want to replace that
+data with more detailed information on
+each of these movies now what we could
+do in this situation is use the replace
+one command replace one as with the
+update commands takes a filter and does
+a wholesale document replacement and you
+can probably see where I'm heading here
+this is actually the strategy that I
+used for guaranteeing that I did not
+insert to duplicate documents in the
+movie details collection it's a little
+bit difficult to see in that collection
+though so let's stick with this example
+that we have here as we work through
+this example so remember that detail
+still contains the document information
+that I need what I'm going to do here is
+replace the summary version of the
+Martian that I have with the detail
+version and do it in this movies
+collection so before we run this command
+let's take a look at our movies
+collection and do a find for the Martian
+okay now let's take a look at what our
+deep
+a document looks like detail object to
+be more precise and now let's go ahead
+and execute that replace one command
+okay now doing a fine for the Martian
+shows us that we've successfully
+replaced the document that was there
+before with this more detailed version
+so that wraps up our discussion of
+updating documents in MongoDB we looked
+at the update one the update many and
+the replace one commands and we also
+looked at up certs
