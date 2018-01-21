@@ -1046,3 +1046,81 @@ Metacritic field actually does in fact
 exist so again remember and is used in
 situations where we need to specify
 multiple criteria on the same field
+
+
+---
+
+### regex
+
+https://youtu.be/dgFiInkJv_M
+
+now one other operator we're just gonna
+touch on briefly allows us to use
+regular expressions to match fields with
+string values to use this operator you
+need to have a fairly good understanding
+of regular expressions but it's
+important that you know this operator is
+there for the situations in which
+regular expressions make sense for an
+application now in our collection the
+documents have an awards field that has
+a sub document with a text sub field
+this text describes the awards that a
+given movie has received and for this
+particular dataset given the way it was
+generated if a movie has won or was
+nominated for an Oscar you'll see that
+reflected in the first word of this text
+field this field has a certain pattern
+it follows in reporting on the awards
+for movies and we can see that reflected
+if we just do a bit of a projection on
+the entire collection
+so for oscar-winning movies we tend to
+see the word won first and nominated
+first for oscar-nominated movies now
+there are some other awards that follow
+the same pattern here's one example but
+for purposes of this example let's go
+ahead and use the fact that Oscar Awards
+are stipulated in this way so here we
+have an example of the use of the regex
+operator now if you're not familiar with
+regular expressions this syntax is
+probably a little bit confusing an
+explanation of regular expressions is
+outside the scope of this particular
+lesson but essentially these slashes
+delimit the regular expression the caret
+here means start at the beginning of
+whatever value were matching against and
+match exactly a capital w a lowercase o
+a lowercase n and then this dot is a
+wildcard character that indicates match
+any character any number of times that's
+what the asterisk means here so
+basically what we're saying here is give
+me back all documents where the awards
+dot text field begins with the word 1
+and to make this a little bit more
+precise I should probably include this
+to indicate that I really want to see a
+space character there so I want to
+ignore for example documents where this
+field begins with the word wonder ok so
+let's take a look at that and as usual
+let's
+project out the values of most interest
+for this query and you can see that
+we're getting back the kinds of values
+that we want these movies here are all
+those that are indicating the movie won
+at least one Oscar so that's a very
+simple example of using the regex
+operator if you have a use case where
+regular expressions are important I
+strongly encourage you to dive deeper
+into the use of this operator there's a
+lot of flexibility here
+Inglés (generados automáticamente)
