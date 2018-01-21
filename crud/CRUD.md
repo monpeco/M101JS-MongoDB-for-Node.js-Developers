@@ -696,4 +696,175 @@ any fields at all now so if you need to
 limit the fields returned by your
 queries projection is the tool to use
 
+---
+
+### comparison operators
+
+https://youtu.be/MgPbE7d-0hQ
+
+okay so now let's talk about some more
+advanced query language concepts in
+particular I want to begin to look at
+query operators of various kinds the
+first operators we'll look at are
+comparison operators you can find a
+complete list with links to reference
+material for all query operators in the
+MongoDB documentation here at Docs
+MongoDB org we're going to do an
+overview of each type of operator with
+some very concrete examples as always
+the best way to learn is to get your
+hands dirty as part of the curriculum
+we'll have you do a number of exercises
+that give you quite a bit of experience
+with these operators so as I said we're
+first going to take a look at comparison
+operators now these are operators that
+allow us to rather than simply doing
+equality matches match on the basis of a
+fields value relative to some other
+value so as you recall from our movies
+collection for each document we have a
+number of fields that detail various
+interesting pieces of data about each
+movie in our collection one of those
+fields is run time and this makes a good
+starting point for considering some
+comparison operators so here we're going
+to look for all movies that have a run
+time greater than 90 run time is
+specified in minutes so this is all
+movies longer than an hour and a half
+and taking a look through the results we
+see that indeed run time 135 and so on
+if we look up through the results if we
+like we can actually project out just
+the title in the run time give us a
+quicker summary of this result set and
+you can see that every document in our
+result set does in fact have a run time
+of greater than 90 minutes now let's
+revisit the syntax just for a minute so
+why is it structured this way well the
+idea here is to maintain consistency
+with quality queries so here we're
+specifying again a field and if you will
+a value that that field should have in
+this case the value expresses a
+relationship that this field should have
+to a specific number only in this case
+instead of specifying a value we wish
+the field to be equal to we're instead
+expressing the type of a relationship we
+want all documents in the result set to
+have with respect to the run time field
+now this syntax also makes it very
+convenient to express range
+so for example I can stipulate that I'd
+like to see movies that are greater than
+90 minutes long and less than 120
+minutes dollar LT being the less than
+operator and in fact what I really want
+here is I'd like it to be greater than
+or equal to 90 minutes and less than or
+equal to 120 minutes and once again
+let's project this out
+so going back here and here we can see
+we've lost a few results from the last
+time because now we're specifying that
+we want movies in a range only up to two
+hours now of course with comparison
+operators we're not limited to working
+with a single field we can easily work
+with as many fields as we need to using
+any combination of comparison operators
+any other type of operator and equality
+matches so suppose that we're interested
+in movies that are highly rated but also
+very long relatively speaking and let's
+mix things up a little bit more by using
+a an embedded document field the tomato
+meter remember the max is 100 and we're
+going to combine this with looking for a
+runtime that's greater than 3 hours
+okay so again highly rated movies using
+the tomato meter field and very long
+movies using the runtime field and here
+we can see we do have two results that
+meet these criteria Godfather Part two
+of course being very long and in my
+opinion the best of the three Godfather
+movies ok so let's take a look at what
+other comparison operators are so dollar
+equ has exactly the same semantics as
+the Equality matches you're already
+familiar with we've looked at greater
+than greater than or equal to less than
+or less than or equal to now let's take
+a look at not equal to and dollar end
+first we'll look at dollar not equal to
+or dollar any in a lot of applications
+particularly if we're doing something
+like data cleaning we might be
+interested in partitioning our data
+because we know we have some fields that
+are maybe not as expected now a lot of
+movies in this collection have four
+rated a value of unrated so maybe we
+just want to look at all documents that
+have an actual rating so PG pg-13 R etc
+I'll project out just a couple of values
+now one thing I should mention about the
+any operator is that in addition to
+matching all documents
+containing a rated field whose value is
+something other than unrated this
+operator will also return documents that
+don't have a rated field at all
+MongoDB supports a flexible data model
+so it is possible there are many use
+cases for this for documents in the same
+collection to have fields that other
+documents do not so in MongoDB data
+models typically rather than store a
+null value for a field we will often
+simply not store that field at all and
+we have a variety of ways of
+distinguishing documents that simply do
+not contain a given field this of course
+being one of them now the last
+comparison operator I want to look at
+allows us to specify a number of values
+any one of which should cause a document
+to be returned so in this case what
+we're saying is give me back all
+documents where the value of rated is G
+or PG if we wanted to extend this simple
+enough we simply add another element to
+the array value of our dollar in
+operator so please do note here that the
+value of dollar in must be an array
+documents that have a value for rated
+that is any one of these three values
+will be returned so projecting out just
+title and rated we can see that these
+documents do in fact match our criteria
+and if we mix this up a little bit and
+oh I don't know let's change this to
+just be movies that are r-rated and
+pg-13 you see that now our results are
+matching those criteria now there's also
+an operator that allows us to do the
+reverse of what dollar n does I'll leave
+that as an exercise to you to experiment
+with that operator we've covered the
+comparison operators for doing queries
+within MongoDB these are largely what
+you would expect from the list of
+comparison operators and these
+significantly expand the types of
+queries that we can do against a MongoDB
+collection
+
 
