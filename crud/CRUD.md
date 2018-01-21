@@ -868,3 +868,93 @@ queries that we can do against a MongoDB
 collection
 
 
+---
+
+### element operators
+
+https://youtu.be/r8Wf6N6l_RM
+
+now let's take a look at a couple of
+operators that have to do with
+considerations for the shape of a
+document by that I mean I mentioned in
+another lesson that mango to be because
+of its flexible data model supports
+operators that allow us to detect the
+presence or absence of a given field
+this flexibility in terms of data models
+also extends to the data type of a field
+value because it is possible although
+not usually a good idea to have the same
+field in a collection have a different
+type of value from one document to
+another so the operators we're going to
+look at our dollar exists and dollar
+type dollar exists allows us to match
+documents for which a given field either
+exists or doesn't exist depending on
+what we set the value of the operator to
+so let's take a look at an example now
+within our movies collection we have
+quite a few old movies and many of these
+movies predate Rotten Tomatoes certainly
+and ratings really of any kind so what
+we might want to do within an
+application is test for the existence of
+review data and here we're going to do
+that by testing to see whether or not
+there actually is a tomato dot metre
+field the Metacritic field is another
+field within this collection that we
+might also want to test for because it
+also provides ratings information those
+being ratings related to movie critics
+as opposed to reviews of general viewers
+who've taken time to comment whoops I
+have a typo in my collection name I
+actually want movie details let's clean
+that up a little bit and we can see that
+in fact yes this document does contain a
+tomato that meter field let's do the
+reverse now and set exists to false now
+we can see that movies retrieved in
+response to this query do not in fact
+contain a tomato field and for most of
+them they won't contain a Metacritic
+field either okay now let's take a look
+at the type field so in an earlier
+lesson we were experimenting with a
+collection that I called movies scratch
+and looking at for the summary data
+using different types of values for our
+underscore ID field so we looked at
+using object IDs and all
+so using the IMDB identifier as the
+underscore ID and what we have in this
+collection are our 8 documents but in
+fact there's really only four movies
+represented here we've got duplicates
+because we're using different underscore
+IDs half our object IDs and half our
+IMDB movie identifiers so what we might
+want to do with a collection like this
+is some sort of data cleaning operation
+what we could do is use the type
+operator so again I'm searching for all
+movies that have an underscore ID filled
+with a type of string and sure enough
+those are the ones that come back and if
+I do a count we can see that it got all
+four of the movies represented here
+where we're using that IMDB identifier
+as the underscore ID field now what we
+might do as a subsequent operation is go
+through and delete all of these
+documents leaving in place the ones
+where underscore ID is actually an
+object ID now for dollar type in the
+documentation you can find legal values
+for identifying every one of the beasts
+on types here we just took a look at
+string
+
