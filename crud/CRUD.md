@@ -247,3 +247,106 @@ collection and with that we've addressed
 the create portion of our crud material
 how we read documents from MongoDB is
 next
+
+---
+
+### the id field
+
+https://youtu.be/EZAuZv4Rz3U
+
+okay so we've talked about the
+underscore ID field a couple of times
+now let's speak in more detail about
+this field and about object ID values in
+particular
+mown gonna be if we don't supply one
+creates an or described a field by
+default all collections have a unique
+primary index on the underscore ID field
+this enables us to retrieve documents
+based on their ID very efficiently we
+can of course also create secondary
+indexes on MongoDB and we discuss
+secondary indexes in other lessons by
+default
+MongoDB creates values for the
+underscore ID field of type object ID
+this is a value type defining to biess
+on spec and it's structured this way
+meaning that the database uses these
+values in order to construct an object
+ID value all object ID values are twelve
+byte hex strings the first four bytes
+are a value representing these seconds
+since the UNIX epoch so a timestamp the
+next three bytes in this string are a
+machine identifier they are the MAC
+address for the machine on which the
+mangodi server is running then two bytes
+contain the process ID finally the last
+three bytes are a counter to ensure that
+all object IDs are unique even if a
+couple of Rights happen under a set of
+conditions such that the first nine
+bytes would end up being the same as a
+second right so these are the components
+of the object ID this is how an object
+ID is constructed and it's these types
+of values that you'll see as the value
+for the underscore ID field in a lot of
+the documents that we'll look at in this
+class and generally when working with
+data in MongoDB
+
+
+---
+
+### the id field
+https://youtu.be/EZAuZv4Rz3U
+
+okay so we've talked about the
+underscore ID field a couple of times
+now let's speak in more detail about
+this field and about object ID values in
+particular
+mown gonna be if we don't supply one
+creates an or described a field by
+default all collections have a unique
+primary index on the underscore ID field
+this enables us to retrieve documents
+based on their ID very efficiently we
+can of course also create secondary
+indexes on MongoDB and we discuss
+secondary indexes in other lessons by
+default
+MongoDB creates values for the
+underscore ID field of type object ID
+this is a value type defining to biess
+on spec and it's structured this way
+meaning that the database uses these
+values in order to construct an object
+ID value all object ID values are twelve
+byte hex strings the first four bytes
+are a value representing these seconds
+since the UNIX epoch so a timestamp the
+next three bytes in this string are a
+machine identifier they are the MAC
+address for the machine on which the
+mangodi server is running then two bytes
+contain the process ID finally the last
+three bytes are a counter to ensure that
+all object IDs are unique even if a
+couple of Rights happen under a set of
+conditions such that the first nine
+bytes would end up being the same as a
+second right so these are the components
+of the object ID this is how an object
+ID is constructed and it's these types
+of values that you'll see as the value
+for the underscore ID field in a lot of
+the documents that we'll look at in this
+class and generally when working with
+data in MongoDB
+
+
+---
