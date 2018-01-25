@@ -304,3 +304,167 @@ time so take advantage of it if you can
 in your applications
 
 
+---
+
+### crunchbase dataset
+
+https://youtu.be/pdun3EPqwDs
+
+
+now what I'd like to do is walk through
+this CrunchBase data that we're going to
+be looking at over the course of the
+next several lessons I want to make sure
+we have a pretty good feel for what
+fields documents in this collection
+contain and the values for those fields
+now here's an example document that I
+pulled from the company's collection
+this is the record for face book now the
+reason why I chose to look at this
+document it's because as you're aware
+documents in a MongoDB collection need
+not all have exactly the same set of
+fields and in this particular collection
+companies that are younger or have had
+less success or simply less activity for
+whatever reason may be missing fields or
+values that the records for more
+prolific companies may contain so the
+face book record has a nice
+representation of all of the fields
+you're likely to encounter in this data
+set so the first thing to note is that
+there is a name for the company and a
+permalink now the permalink is a unique
+identifier of sorts in the sense that
+using this root we can always find the
+web page that represents this company by
+using this permalink there's also of
+course an underscore ID for every record
+in this collection and the underscore ID
+is an object ID value for every document
+now you'll also notice that there are
+URLs that pertain to the company itself
+some mention of the number of employees
+the eart was founded as well as month
+and day and I should also point out that
+the most recent records in this data set
+are about two years old this is a big
+dump of CrunchBase that was pulled some
+time ago before they put in place the
+API that they now have I'm using this
+data set because it's already been
+curated somewhat and cleaned up a little
+bit so we're not likely to run into too
+many problems using it there are some
+fields in this data set that are very
+crunchbase specific these dead pool
+fields reference a particular section on
+CrunchBase for companies that fall into
+what they call their dead pool and the
+dead pool as you might imagine our
+companies that are closing have been
+acquired and shut down or something of
+that nature these documents contain a
+list of tags
+some contact information a very brief
+description of the company and the space
+that it's in and then there's an
+overview field which is depending on the
+company anywhere from a sentence to
+several paragraphs on what the company
+is what business they're in etc now a
+couple of the fields I'd like to drive
+into our relationships competitions and
+a couple of the others that are here
+let's look at relationships
+essentially relationships identifies
+people who have played one role or
+another in the company typically these
+are executives listed and for every one
+of these entries in this relationships
+array there is an is passed field and if
+it's false that indicates that at the
+time this record was last updated this
+person either still had the title or did
+not is past being false indicates that
+Mark Zuckerberg still has these titles
+and as we scroll through here we can see
+that the relationships array has a great
+many entries for Facebook as it does for
+a lot of these companies now I want to
+pause here for a moment just to make
+sure we understand the structure now
+relationships is a top-level key meaning
+that it's not within a nested document
+the value of relationships is an array
+and the elements within that array are
+documents that represent a brief summary
+of a person each of those elements has a
+nested document within it that specifies
+the first name last name and a permalink
+for the individual again this being a
+unique identifier across CrunchBase for
+Mark Zuckerberg or anyone else in this
+array or a similar array for another
+company okay so that's relationships
+let's look at competitions this is
+really a list of competitors similar in
+structure to relationships provider
+ships is a list of companies that have
+provided services for in this case
+Facebook again similar structure to what
+we saw for relationships and for
+competitions funding rounds is
+interesting lots of detail here in terms
+of what was raised when it was raised
+and from whom it was raised and
+typically there's also a link to an
+article that talks about the round of
+funding with a bit of a description
+often the title of the art
+we can also look at offices and here
+we'll find the address what type of
+office whether its headquarters or just
+a satellite office for every office that
+the company maintains and then the last
+field I wanted to look at is this
+milestones field so milestones is
+essentially a chronology or timeline of
+major events in the lifetime of the
+company and a lot of the ones for
+facebook
+as you can see from what we've scrolled
+through here have to do with numbers of
+users for Facebook and here's another
+one so with each of these milestones
+there's typically an article there is a
+year month and day called The Stoned
+year stone month stone day and the
+source description field that contains a
+title or a brief summary of the event
+and typically these two were linked
+together this being a description of the
+article that's here and actually though
+I said milestones it was the last field
+I wanted to talk about I'd actually also
+like to talk about IPO now given the
+number of records in this collection
+there aren't actually that many
+relatively speaking that have gone to
+IPO but of course Facebook has and so
+here with the IPO record we have an
+embedded document that describes the
+valuation amount at the time the IPO
+occurred when the IPO occurred and what
+the stock symbol is okay so that gives
+you a nice overview of the fields in the
+company documents in our collection and
+what I've tried to do here is point out
+some of the fields that we'll be working
+with as we look at using the no js'
+driver to do more and more with MongoDB
+Inglés (generados automáticamente)
+
+
