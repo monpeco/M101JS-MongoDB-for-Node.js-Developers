@@ -468,3 +468,411 @@ driver to do more and more with MongoDB
 Inglés (generados automáticamente)
 
 
+---
+
+# queryOperatorsInNodeJSDriver
+
+https://youtu.be/b39cyy75Lbs
+
+so it last it's time to take a look at
+more programmatic access to MongoDB
+through the nodejs driver and what I
+mean by that is we're gonna begin to
+look at using the driver for
+applications that respond to input and
+query MongoDB accordingly rather than
+simply passing along some sort of static
+query document or projection document
+that we've hard-coded in so what I'd
+like to look at here is a simple
+application that will take command-line
+parameters and query MongoDB differently
+depending on what we've specified as
+options on the command line this is the
+type of thing we might do in a web-based
+application or some other type of
+application but allows us to focus on
+the driver and it's interaction with
+MongoDB without too many additional
+packages and details
+one additional NPM package we are using
+here is command-line arts and this gives
+us a nice convenient way of dealing with
+arguments passed to our application on
+the command line so here we're requiring
+that package it's also in the package
+JSON file that will accompany this
+handout and here we'll create this
+command-line arts function that will
+allow us to pull in the options from the
+command-line before we do anything let's
+try to run this now our attempt to run
+this prints out this usage message
+saying first two options below are
+required the restoration --all the
+intention of this application is that we
+can actually pass a few arguments into
+this application and use these values
+we've passed in to create queries to
+MongoDB through the driver let's go see
+how options are parsed and where this
+message comes from in the app okay
+so what I've done is written this
+commandlineoptions function and it uses
+the command line Argan that we got from
+our import of the command line arcs
+package now what we've done here is
+defined the command line arguments that
+this particular application will accept
+first year last year and employees these
+we will use to specify a range of years
+or founding years or starting years of a
+company with which we'll query our
+company's collection and a number of
+employees value we've also specified a
+one letter alias for each of these to
+make it more convenient when
+constructing a call and passing in these
+parameters note that what we'll end up
+with here is is something much
+like what we saw with mango import where
+we specified the database in collection
+where we wanted to import our company's
+data using - D and - C respectively in
+this case we're looking at designators
+for the first year last year and
+employees command-line arguments now
+this method of constructing command-line
+arguments is defined by the command-line
+arts package for more detail on the
+semantics of this I encourage you to
+look at the documentation within the NPM
+repository the last thing I'll mention
+here though is that we are stipulating
+that each one of these command-line
+arguments should be a number the reason
+for that is because when they're typed
+on the command line even though we may
+be typing a series of digits we could
+conceivably pull them in as a string
+basically this tells the command-line
+arts package how to parse them and what
+type they should be cast to in order to
+ensure that we can use them as desired
+within our application this command line
+are call gives us then an object on
+which we can call methods so this
+constructor creates a CLI object with a
+parse method that parse method then will
+parse everything that we've typed in on
+the command line let's go actually enter
+some command line parameters so instead
+of just node fjs I'll actually enter a
+value for first year let's say 2004
+value for last year 2008 and a number of
+employees and for this let's do 100 the
+intention of this application is that
+it's going to query MongoDB for all
+records where the year in which the
+company was founded falls in the range
+2004 to 2008 inclusive of those two end
+points and where the number of employees
+is less than 100 before we run it let's
+go back to our application and just
+finish off this discussion of how the
+arguments are parsed the results of
+having called parse is passed to this
+options variable now options is merely
+an object and there will be one field
+created within that object for each one
+of the values specified here so for
+first year last year and employees even
+though we're just using the alias in
+each of these places the way we'll
+reference each of those values in this
+options object is by the full name so
+this line here and forces the
+requirement that first year in last year
+always be present in the command line
+arcs pass to this application if they're
+not that's when this usage message gets
+printed out that we saw here the reason
+that was printed out was because there
+was no first year and there was no last
+year from this call to fjs finally if we
+make it past this then I simply return
+the options object so where does this
+call happen happens right here options
+will be set here in the global context
+and then I go and make my connection to
+the database note that I don't bother
+making a connection to the database
+until this function returns this
+function will only return if this
+condition does not hold and we don't
+need to print the usage message and then
+just exit if we get past this check here
+then we'll return options and we know
+we've got a good set of command line
+options and can go ahead and create our
+connection and get started with what
+this application does okay so now let's
+go ahead and run it and what I'm going
+to do first is just demonstrate that
+check I'm still getting my message now
+what if I just do e nope not good enough
+how about if I now do a first year and a
+last year and there we have it I see
+results and in fact I've got almost 8000
+results let's go ahead and add that
+employee's parameter now and now we can
+see we've significantly reduced the
+number of results so what's happening
+here is we're doing a query using these
+values that we've entered again
+specifying a range on the year in which
+the company was founded and a number of
+employees cap so looking for all
+documents that match this these
+constraints and we're printing them out
+here or at least we're printing a
+projection of them out here
+I'm also displaying what query was
+actually sent to the database you can
+see here that founded year is being
+queried for a range 2004 to 2008
+inclusive of those two years and number
+of employees greater than 100
+I actually misspoke earlier I believe I
+said this value specifies a cap on the
+number of employees in fact in this
+particular application it specifies a
+minimum number of employees ok so that's
+why we're seeing the query come out the
+way it did here all right so now let's
+go back into our app and take a look at
+how all this works there's a call to a
+function called query document here and
+note that we're passing those
+command-line options that object that
+contains all of our command line
+options or command-line arguments and
+what we get back is this value query
+that we end up passing to find here
+we're building our projection document
+and doing so statically we'll look at a
+couple of examples a little bit later on
+where we build a projection object
+programmatically as well okay so we pass
+the query in the projection here to find
+making the call synchronously just
+getting the cursor back okay and then
+we're tracking number of matches here
+now before we go any further let's go
+take a look at how our query document is
+being built what's happening here is
+that I'm constructing a query object
+here I'm doing so using the options that
+were passed in on the command line so
+I'm accessing this options object that
+was passed in remember we passed it in
+to the query document function you can
+see here that I'm building the query
+object by specifying founded year if we
+take a look back at our Facebook example
+we can see that founded years it's a
+top-level key as you might imagine
+specifies the year in which the company
+was founded so what I'm doing then is
+I'm saying okay founded year in my query
+object that I'm building up here has a
+value that is itself an object okay
+remember in the parlance of JavaScript
+using this type of syntax or this type
+of syntax here which amounts to the same
+thing is how we go about constructing
+objects these things are objects in
+JavaScript and these are the things that
+we are interacting with or that we call
+documents in a MongoDB context it just
+turns out that because we're working
+with JavaScript these objects end up
+looking a lot like documents that we
+interact with through the Mongo shell
+and generally when we talk about Mongo
+DB schema remember that JSON actually is
+an acronym for JavaScript object
+notation this object that we're
+constructing is the value for founded
+here this object or document that we're
+constructing as the value for the
+founded year field has two fields within
+it the key for the first field is this
+dollar gte if you'll remember that is a
+query operator and the second one is
+dollar l2e by stipulating as the values
+for each of these keys the first year in
+the last year respectively we construct
+this range right here and
+note that this is one reason why the
+query language works the way it does so
+I can specify a field and then use query
+operators to specify a range the next
+piece here in this query document
+function is where we're dealing with the
+employees parameter passed here whatever
+that value is now remember that we don't
+need to specify an employee's value here
+the first thing that we're doing is
+we're checking to see whether this key
+employees is in fact in the options
+object that was passed in this is the
+syntax we used for checking for the
+existence of a key in an object in
+JavaScript we use this in operator if
+employees is in fact in options that
+means that on the call to this run of
+the application the user did in fact
+specify a value for employees so we need
+to build that into our query document in
+building it in we're going to use the
+GTE operator and we're going to access
+that employee's value much in the same
+way we did the first year and last year
+we're using a different syntax here
+though in order to set this property of
+the object or in order to assign this
+value to the number of employees field
+within this object the reason why we can
+do this is we've already got this query
+object that we constructed here
+javascript allows us to use a dot
+notation to reference properties of an
+object or field names and I can use an
+assignment statement to specify that
+number of employees should have the
+value that results from constructing
+this object or document now I'll point
+out that the only reason why we're doing
+this as a second step is because
+employees is optional we may not in fact
+have a value here if we did we could do
+something like this and be done with it
+now the problem here is that I've
+actually put this in the wrong place
+it's not actually part of the embedded
+document for founded year rather it
+would go here and now the end result of
+doing this would have exactly the same
+effect as this and we could set up our
+query document this way if we were
+guaranteed that employees would always
+be there as a command-line argument it's
+not and I did that on purpose so that I
+could show you this alternate syntax but
+I want you to understand that the end
+result of doing this followed by this
+and Subang there is an employee's value
+passed
+the command line is exactly the same as
+if we had constructed our query object
+this way let's run this both with
+employees and take a look at the object
+that gets constructed so founded year
+with that nested document number of
+employees with it's nested document just
+specifying one end of a range okay and
+then take a look at a run without
+specifying employees and we can see that
+all we have in our query document is
+arranged for founded year okay so now
+let's close off our discussion of this
+application by just running through
+what's left here in the main body of the
+code here we've talked about how we get
+the command-line options and how we use
+those options to construct a query
+document you can see here how we're
+specifying the projection document note
+that we're excluding underscore ID but
+including the name of the company the
+founded year the number of employees and
+the CrunchBase URL everything else is
+excluded we call find synchronously
+passing the query object and the
+projection object or a query document in
+projection document and with that cursor
+then we call the for each method on the
+cursor now again remember that for each
+takes two functions as parameters the
+first function is the one that's used to
+iterate through the documents the second
+function is the one that gets called if
+there's an error or when the cursor has
+been exhausted this gives us a way of
+doing some cleanup or some other exit
+sort of work that we'd like to do when
+the cursor is exhausted in the iteration
+through the documents matching our query
+I'm keeping a count of the number of
+documents that matched note that we
+initialize that variable here and set it
+to zero this variable is in scope for
+this callback and then when the cursor
+is exhausted and we hit this function
+here for each we'll take care of calling
+this call back for us we simply check to
+see whether there was an error and
+finally print out those last two
+messages we saw one being whatever the
+query object was and then the number of
+documents that matched based on discount
+that we maintained here and finally we
+close the database and exit our program
+so the last piece to explain here is
+just this JSON dot stringify is a
+convenience method that allows us to
+pass an object this method will generate
+a string representation of this object
+now there's just one more thing that I
+want to show you here and that is if
+instead I don't exclude underscore ID
+let's take a look at what our output
+looks like this is a minor point but
+something I want to call your attention
+to because
+you're gonna see it and you're gonna
+wonder underscore ID if we take a look
+at how it prints out we see that this is
+just a big hex string but it does look a
+little bit different from what we're
+used to seeing in the Mongo shell so if
+I go to the Mongo shell and do a query
+where I look at only underscore ID
+values as you remember we always have
+this representation of the object ID
+note that it's got the word object ID
+with parens enclosing something that
+looks very much like what we're seeing
+here and here and here there is no
+difference in terms of the value type
+itself the only difference is in how the
+shell chooses to stringify or create a
+string representation for object IDs and
+how JavaScript or the nodejs driver
+chooses to stringify object ID values
+this is just a printed version of an
+object ID from the nodejs driver and
+this is a printed version from the Mongo
+shell same value types just a different
+way of printing them out that wraps up
+our first look at doing things a little
+bit more programmatically within a
+MongoDB nodejs application and along the
+way we looked at using some query
+operators and how to construct query
+objects from variable values within our
+application
+Inglés (generados automáticamente)
+
+
