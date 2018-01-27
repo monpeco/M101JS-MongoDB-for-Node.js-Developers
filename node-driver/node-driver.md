@@ -465,7 +465,6 @@ what I've tried to do here is point out
 some of the fields that we'll be working
 with as we look at using the no js'
 driver to do more and more with MongoDB
-Inglés (generados automáticamente)
 
 
 ---
@@ -873,6 +872,5 @@ way we looked at using some query
 operators and how to construct query
 objects from variable values within our
 application
-Inglés (generados automáticamente)
 
 
