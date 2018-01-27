@@ -1385,3 +1385,443 @@ of the things we can do in terms of
 taking an input and using that input to
 query MongoDB
 
+
+---
+
+### dot notation on embedded documents in arrays in node js
+
+https://youtu.be/nYcV-N3QlBk
+
+
+continuing our discussion of dot
+notation in the nodejs driver I'd like
+to look at one more example in this case
+using dot notation to access documents
+that are embedded as elements of an
+array field so going back to our
+Facebook example you'll remember that
+there is an offices field okay and as we
+discuss offices is an array field where
+each element in the array describes one
+of the company offices it's sometimes
+interesting to see what companies have
+offices in which countries so this
+particular document indicates that
+Facebook has offices in California in
+Dublin Ireland and in New York so what
+I'd like to do is demonstrate using dot
+notation to allow us to query for
+companies who have offices in a
+particular country so we'll have to use
+dot notation to access the offices dot
+country code field in order to do that
+now the reason why we can use dot
+notation in this case a way to think
+about it is that for every element in an
+array MongoDB essentially conceives of
+the data as if there were a separate
+document in this case a document
+representing all of the facebook data
+for each one of these entries here so
+it's very much like there is a facebook
+document that has an offices field that
+has a single embedded document for the
+menlo park office and then there's a
+completely separate facebook document
+that has a a single embedded document
+for the ireland office now in point of
+fact that's not actually how MongoDB
+works but that's a good mental model to
+keep with you as you think about using
+dot notation to reach into embedded
+documents like this that is documents
+that are embedded within a raise so
+going back to our application here's an
+updated version of our command line app
+and here in our query document function
+in addition to dealing with founded year
+employees and IPO we're now dealing with
+country and I can specify country on the
+command line using this see alias in
+this case I want to query for all
+companies founded
+between 2004 and 2008 with more than 100
+employees who have an office in Ireland
+how am I going to do that well similar
+to the way we use dot notation here I'm
+going to use that notation here to add
+yet another field to our query document
+I'm going to take the value for country
+as specified on the command line and I'm
+going to assign it to the offices dot
+country code field offices dot country
+code okay so running this okay we can
+see we got five matching documents our
+query document has a range for founded
+year number of employees is greater than
+100 and we've stipulated offices that
+country code of IRL or Ireland ok now
+the output looks a little interesting
+let's talk about that in order to do
+that we need to go look at our
+projection document within our
+application ok so our projection
+document says exclude underscore ID
+include name include offices dat country
+code and IPO dot valuation amount ok so
+by including offices that country code
+we're saying for the offices array make
+sure you include in the output the
+country code field the semantics of that
+in MongoDB are that for every element
+within the offices array field I will
+get country codes print it out okay and
+what's valuable to us in this case is
+that not only do I get to see for each
+company in this case FleetMatics that
+yes they do in fact have an office in
+Ireland but I also get to see other
+countries in which they have offices in
+fact I can see here that there are
+actually five different offices in the
+US and this company here populace has
+offices in both Ireland and Italy
+central reservations in Ireland and
+Spain and of course Dropbox with offices
+in the US and Ireland okay so you can
+use that notation to specify fields
+within embedded documents you can also
+use dot notation to identify fields
+within documents that are embedded
+within a raise and again that's because
+MongoDB essentially treats each one of
+these entries and embedded documents in
+other arrays as if there were multiple
+copies of this document
+chipwich had a single document like this
+as an embedded document value for this
+offices field
+
+---
+
+### sortSkipLimitInNodeJSDriver
+
+https://youtu.be/l4D7n0ntD9Y
+
+now when we're retrieving documents from
+a MongoDB collection it's often the case
+that we would like the database to
+support us in paging through the results
+now here I'm not talking about batching
+but rather think about the search
+engines you've used or a site like
+Amazon where you do a search for a
+product and you get back a number of
+pages of results to support something
+like that we don't want to render the
+entire result set on a page because that
+would take too long and for a variety of
+other reasons but databases in general
+are designed to support that kind of
+paging mechanism first of all it's
+important to be able to specify a sort
+on the results of my query I may be
+sorting by year price or some other
+feature of my results and then as I move
+to page two that's likely implemented by
+another query to the database where I'm
+skipping say the first 10 results and
+just taking the second 10 likewise I may
+simply limit altogether because I may
+have millions and millions of records in
+my collection I may simply want to limit
+the number of documents that the
+database will hand back to me to some
+reasonable number that my app is
+prepared to deal with maybe perhaps
+several hundred thousands or maybe even
+tens of thousands because these concepts
+of skipping limiting and sorting our
+most important when we're building
+MongoDB applications we're going to talk
+about them now in conjunction with the
+nodejs driver so the first one I'd like
+to look at is sort okay so here we have
+a version of the application that we've
+been looking at throughout our
+discussion of the nodejs driver and this
+application takes command line
+parameters for first year last year and
+employees allowing us to specify a range
+of years in which a company and our
+collection was founded and a minimum
+number of employees for companies that
+we'd like to see returned so just remind
+ourselves how this application works
+let's go ahead and run it the one we're
+interested in running is app dash sort
+and I'll get my expected usage message
+so now let's actually specify command
+line parameters here for first year i'm
+going to use 2006 for last year 2009 and
+for number of employees 100 I do my
+query 200 for total documents and you
+can see that the years founded 2006 2008
+2007 2008 2009 and so on as I scroll
+back through I set up the output here a
+little bit so that we can more easily
+see when our sort takes effect note that
+we're printing the name of the company
+and
+and what year it was founded and finally
+the number of employees now let's go
+back to the app and actually impose a
+sort and the cool thing about sort skip
+and limit beyond the functionality they
+provide to us is that in the node.js
+driver these are cursor methods that we
+can simply chain on to our existing
+cursor object much in the same way that
+we did with project let's take a look at
+sorting our results now by founded here
+okay so let me talk about the syntax of
+this briefly to sort we use the same
+syntax we use for just about everything
+else with regard to the mongo DB query
+language in that we specify a document
+and for sorting we specify the field to
+sort on and one if we want to sort in a
+sending order so 2006 2007 2008 2009
+versus if we specified minus one then we
+would sort into descending order so
+larger values would occur first 2009
+2008 2007 and so on okay so we create
+our cursor object with a call to find
+then we specify a project document on
+that cursor and finally a sort now it's
+still the case that not until we call
+this for each here that the driver
+actually says oh I better go get some
+documents from the database instead it's
+building up its representation of our
+query here in this cursor object as we
+make additional cursor method calls
+adding additional detail to the command
+that we do eventually want to issue to
+the database so now let's run this again
+and now we can see that our results have
+in fact been sorted we have all the
+2009's preceded by all the 2008 preceded
+by 2007's and so on if we change the
+direction of our sort the minus 1 then
+when we run our query we can see that
+now the results are sorted in the
+reverse order with all of the earlier
+years appearing last so that's how we do
+sort in the nodejs driver at least at a
+simple level but what if we actually
+want to sort on multiple fields for
+example I would actually like to see
+these results sorted by year but then
+sorted by number of employees and I
+think it would be most useful because
+the kind of thing I'm interested in here
+is how are companies over the course of
+their lifetime growing so companies that
+were founded in 2006 are there a lot of
+those that have grown too large numbers
+of employees versus say later years of
+founding 2009 2013-2015 just to get a
+sense for how rapidly
+companies in this database are growing
+and again we're just doing some very
+cursory exploration here when we talk
+about the aggregation framework in other
+lessons we'll see how we can really do a
+rigorous analysis on data sets like this
+if I want to sort on multiple fields
+there's something that we need to know
+about JavaScript in the nodejs driver
+you can see did here I was using an
+object as the value that I was passing
+the sort but here I'm actually using a
+list or array the reason for that is
+because the order in which these sorts
+are applied is important here we want to
+sort first by founded year in a sending
+order so two thousand six to two
+thousand nine or whatever years we
+specify and then within each year sort
+by number of employees and we want to do
+that into descending order so companies
+with larger numbers of employees will
+appear first within an individual year
+the probably run into if we try to pass
+an object here again remember object and
+document i'm using those two terms
+interchangeably if i try to pass an
+object here is that it's possible that
+the fields will be reordered there is no
+guarantee of order of fields for
+javascript objects but the order of
+array elements is guaranteed so if I
+want to make sure that I sort first by
+founded year and then by number of
+employees the nodejs driver allows me to
+pass an array to sort and within that
+array I specify all of my elements as
+two element tuples with the field i'm
+interested in sorting on and the sort
+order as the two elements of each of
+those nested arrays let's take a look
+now at what happens when we use this
+sort going back and running our same
+command and we can see that we're
+sorting now by year in what looks like
+sure enough a sending order let's take a
+look at where 2009 starts here note
+we've got square with 600 employees
+appearing first followed by four square
+170 urban airship 165 and so on so we
+are in fact sorting our search results
+by year in a sending order and then
+within each year in descending order by
+number of employees and just as a side
+note we can see that we've got some
+dupes in this data set so there's a
+little bit of cleanup that we could
+still do and lots of different companies
+are contained within this database
+beyond the startup companies that we've
+mostly been talking about so we've
+talked about sort so now let's talk
+about skip and limit and in fact we'll
+look at all three of these together skip
+limit and sort here is an extended
+version of this applet
+we've just been looking at note that the
+same sort that we ended up with when we
+were looking at the earlier version of
+this application is present here but
+we're also going to skip and limit now
+skip and limit are also cursor methods
+and as with project and sort they merely
+modify the description of the operation
+that we want to execute against the
+database calling skip and calling limit
+do not force a call to the database it's
+only in this application when we call
+for each year that will send this
+operation the details for which we've
+been building up here to the database
+complete with the query the projection
+we've specified the sort we'd like to
+see how many search results to skip and
+to what size we'd like to limit our
+results set now we're taking these skip
+and limit as command line parameters
+much in the same way we have done in the
+past so I'm not going to go into detail
+on those except to point out one thing
+and that is that for each of them were
+specifying a default value so if skip
+isn't specified we specify its value in
+the options object that gets passed back
+from command line options will simply be
+zero and limit has a default value of
+20,000 I said it at 20,000 because I
+know there are between 18 and 19
+thousand documents in this collection
+and so a default value of 20,000 means
+that I could potentially retrieve all of
+the documents from the collection one
+last piece of detail here is that we're
+not specifying an alias reader skipper
+limit so at the command line we're
+actually going to have to specify the
+full skip and full limit labels for
+these command line options and therefore
+have to use a double dash in front of
+each of them that's just the way our
+command shell works for command line
+parameters whose names are longer than
+one letter you've got to use double
+dashes in front so let's take a look at
+an example of calling this application
+now roughly the same parameters as
+before the only difference is I'm
+putting the lower bound on number of
+employees at 250 that's just so i have a
+few less appear in each year and i'm
+limiting my results to 10 and actually
+going ahead and specifying a skip of 0
+even though that's the default value and
+you'll see why in just a moment so now i
+do my query you can see that if i scroll
+up i only got 10 documents back you can
+also see that they're all from 2006
+because i only requested the first 10
+documents all of the employee numbers
+are greater than 250 the nice thing
+about the way this application is set up
+is that it's very soon
+allure to what I was talking about
+earlier where you do a search to Amazon
+you see 10 results on a page or maybe 25
+and then in order to see results beyond
+that first page of results you click a
+next button on the back end what's
+happening is the application is actually
+submitting another query to the database
+same query just skip the first ten if
+that's how many we have on the page
+that's what we're doing here I can look
+at the first 10 results and then I can
+say okay I'm ready for the second ten
+now and the third page you can see now
+from 2006 I'm crossing over into 2007
+the fourth page skipping the first 30
+results and so on this is because in our
+application with these parameters that
+were passing in we are specifying that
+we want to in our cursor skip whatever
+was passed at the command line and limit
+our results to whatever limit value was
+passed on the command line so this is
+very powerful functionality that allows
+us to make the database really work for
+us we don't have to keep track of too
+much state in our application in order
+to do something like this we simply need
+to know how many to skip for example if
+we want to page through results and
+there are a number of other ways we can
+use this type of functionality to our
+advantage now there's one last thing
+that I want to talk about and that is
+the order in which these things are
+applied imagine if we had a result set
+and we applied the Skip operation before
+the sword operation that's almost
+certainly not what we want it for
+example if I really want to sort by
+founded year but the database actually
+applied skip first then I might actually
+end up missing some of my 2006 results
+because they were in that group that was
+skipped before I actually did the sort
+one thing that's important to bear in
+mind is that I can completely reverse
+the order in which I've applied these to
+the cursor run my query and what happens
+is I get exactly the same results as I
+did previously when these were ordered
+by sort then skip then limit the reason
+for that is that it doesn't matter what
+order we apply these constraints to our
+cursor MongoDB will always sort first
+skip second and limit third so that is
+skip limit and sort or should I say sort
+skip and limit within the note jas
+driver
+
