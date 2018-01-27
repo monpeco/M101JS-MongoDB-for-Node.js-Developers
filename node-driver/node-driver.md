@@ -1168,3 +1168,5 @@ expressions because they are first-class
 entities in that language and MongoDB
 supports the syntax and operations for
 those regular expressions
+
+Tags: [Text Indexes](https://docs.mongodb.com/manual/core/index-text/)
