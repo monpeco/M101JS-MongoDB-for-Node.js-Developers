@@ -874,3 +874,297 @@ objects from variable values within our
 application
 
 
+---
+
+### regexInNodeJSDriver
+
+https://youtu.be/JOzJcUVK-RY
+
+
+now I'd like to take a look at the use
+of regular expressions using the dollar
+regex operator in the nodejs driver now
+regular expressions are handy as a
+quick-and-dirty means of searching
+string valued fields such as say tag
+list or overview here for particular
+words phrases more complicated regular
+expressions of one kind or another if
+you wanted to do something search engine
+like we'd recommend that you use a text
+index for full text search capability
+but in many cases being able to search
+text fields using regular expressions
+it's a great way to explore your data
+and even support some simple use cases
+in production here we're going to use
+the dollar regex operator in a simple
+application as a means of exploring our
+data set a little bit we're going to use
+the same mechanism we've been working
+with supplying command line parameters
+to our application here we're going to
+look at a very simple application that
+is only taking a regular expression on
+the command line so let's look at our
+app so the structure is very similar to
+the kinds of applications we've been
+looking at as we are taking our deeper
+dive into the nodejs driver if we scroll
+down we can see that we're specifying
+exactly one command line argument with
+that command line parameter coming in
+for a regular expression we need a way
+of adding it to our query document so
+using this mechanism that we've seen
+previously if overview was passed in two
+options then we're going to set the
+overview key in our query object to have
+a value that is this document and that
+document has two fields one has the key
+dollar regex with whatever value we
+specified on the command line as the
+value of the regular expression will
+simply specify a string representation
+of a regular expression there in the
+command line and that's what we'll end
+up as the value here we also have a
+second field here and that's because I
+want to ensure that this query is
+executed in a case insensitive manner
+meaning that a capital a is treated the
+same as a lowercase a for all characters
+we match against so the way I do that is
+by using the dollar options operator and
+dollar options is designed to be used
+with dollar regex and I simply specify a
+lowercase I here this indicates to
+mongodb that I want to do case
+insensitive matching okay now one more
+thing I want to point out about this
+application is that I've created a
+projection document function
+here will be passing in options and here
+I'm creating my projection document and
+returning it you might wonder why I'm
+actually checking to see whether there
+is an overview option because as we saw
+when we attempted to run this without a
+dash oh I got my usage message the
+reason why I implemented the query
+document function and the projection
+document function the way I did is
+because we're going to extend this a
+little bit and in that case it's going
+to be much simpler if we simply build on
+to what we have here what I haven't
+mentioned yet is exactly what we're
+going to be searching against in our
+company's collection as we look for this
+regular expression as you might have
+guessed from the field naming here we
+are going to be searching for the
+regular expression supplied on the
+command line in the overview field of
+documents in this collection let's run
+this and what I'm going to specify as my
+regular expression as actually just a
+simple phrase this is not a class about
+regular expressions there's a lot of
+power and regular expressions but what
+I'm trying to demonstrate here is a way
+that we can simply explore text fields
+within our collections using the dollar
+regex operator the semantics of this
+when it's applied in our query document
+are that we will look for this phrase
+note that these two words are separated
+by a single space anywhere within the
+text that makes up the value for the
+overview field for documents in our
+collection so let's run it and if we
+take a look through the results that we
+get back we can see we've got a company
+called gross domestic product and here
+we can see that personal finance appears
+right here so again as I said our
+regular expression simply needs to match
+somewhere in the overview text likewise
+if we scroll up we see mint com this is
+a company you may be familiar with and
+we can see that right here mints
+overview uses the phrase personal
+finance that's a simple example of using
+the regex operator in the nodejs driver
+now let's look at a slightly more
+complicated example and here for this
+application we are going to add the
+ability to search either the overview
+field or the milestones field and now
+our options are dash 0 if we want our
+regular expression to be matched against
+the overview field and dash mne if we
+want to match against the milestones
+feel let's just remind ourselves what
+the milestones field looks like so going
+back to our Facebook example if we
+scroll down to milestones we can see
+that there are actually several text
+fields we're reminded that milestones is
+an array field and the elements of the
+array are embedded documents the
+are a number of text fields in these
+milestones documents the one that we're
+going to be matching against is this one
+the source description here you can
+begin to formulate in your head what our
+query document has to look like we're
+going to have to use some dot notation
+and specify milestones dot source
+description because MongoDB creates keys
+for all elements in array valued fields
+when it stores documents we can use a
+very simple dot notation expression
+milestones that source description in
+order to match our regular expression
+using the dollar regex operator so now
+let's look at how we've implemented that
+so as I mentioned we're going to extend
+our query document function and we're
+also going to extend our projection
+document function right so let's look at
+the query document one first we've set
+up our command line parameters so that I
+can specify one or the other or both the
+example we'll look at here is simply
+searching against milestones as an
+alternative to overview as we specified
+before this is where we specify the
+value of the overview key in our query
+document to do something similar for
+milestones we need to use this array
+indexing syntax because we're using dot
+notation here so we enclose milestones
+dot source underscore description in
+double quotes this stipulates that for
+our query object we want to set the
+value for a key defined as milestones
+dot source underscore description and
+then we set the value using the dollar
+regex operator here we're using the
+regular expression that was passed in as
+the value for our milestones
+command-line argument and again
+specifying that we want to do a
+case-insensitive match based on the
+discussion in earlier lessons where we
+went into this type of setup in greater
+detail it should be clear to you what's
+going on here now I want to point out
+that we're performing something that's
+analogous to what we did in the query
+document function here in the projection
+document function if you'll remember
+from our previous implementation the
+implementation for the projection
+document function in the application we
+looked at at the beginning of this
+lesson we simply built an object here
+using javascript object notation and
+handed that back as our projection
+document in this application because if
+it's possible to have an overview field
+or a milestones field or both we have to
+check to see whether overview is in the
+command line options it was passed in
+and if it is then we want to make sure
+that we're including that field in the
+values that we project out likewise with
+milestones if
+milestones was specified in our command
+line options then we want to make sure
+that the milestones dot source
+underscore description field is included
+in documents that are returned from the
+database looking at the main body of the
+application there's nothing different
+here from the applications that we've
+been looking at with one exception and
+that is now we're calling a projection
+document function to build up the
+projection document that we then send to
+the project cursor method so let's run
+this app everybody want to look for
+again remember the milestones which are
+important moments in the history of a
+company is the following regular
+expression note that i'm enclosing this
+regular expression in quotes as i did
+when we looked for personal finance and
+here i want to look for two words in
+succession but they might be separated
+by a couple of other words so the tumors
+I'm interested in are billion and
+valuation but it's unlikely that this
+phrase will appear I might see
+billion-dollar valuation I might see a
+number of ways of expressing this notion
+of a company having a valuation that's
+measured in billions of dollars or some
+other currency using some regular
+expression syntax I can specify that I
+want to see the word billion followed at
+some point in the text by the word
+valuation in between there can be any
+number of characters and in fact to be
+more precise since this would actually
+match this expression I should really
+say dot plus which means there must be
+at least one character separating the
+word billion from the word valuation for
+example a space character again this is
+a very coarse-grained means of searching
+within text fields but a very powerful
+and handy tool to have one we're
+exploring collections again remember
+that milestones is an array and so there
+are many documents within that array
+that contain a source description field
+and in matching against that field I
+only need to find one document that
+matches my regular expression for each
+document returned to me here's square
+founded in 2009 here are all the
+milestones that were listed here we have
+the word billion again remember i'm
+doing case insensitive search separated
+by space dollar space and then valuation
+so here is at least one place where the
+document foursquare matched my query and
+now air B&B; this is kind of an
+interesting example of a match it's not
+something I would have imagined but
+certainly makes sense so here I've got
+the word billion separated from the word
+valuation by a plus character and a
+space and then for livingsocial here
+are a very simple match where I've got
+billion space valuation so you can see
+the variety of different types of
+matches that this regular expression can
+have and this hints at the real power
+and value of the dollar regex operator
+and the kinds of things that we can do
+with it if you're interested I encourage
+you to take a look at a regular
+expression tutorial any of a variety of
+regular expression tutorials available
+online little googling will get you
+where you need to be MongoDB supports
+perl-compatible regular expressions the
+perl programming language kind of
+defines the standard for regular
+expressions because they are first-class
+entities in that language and MongoDB
+supports the syntax and operations for
+those regular expressions
