@@ -1170,3 +1170,218 @@ supports the syntax and operations for
 those regular expressions
 
 Tags: [Text Indexes](https://docs.mongodb.com/manual/core/index-text/)
+
+
+---
+
+### dot notation in node js
+
+https://youtu.be/vHpW3l0wOmA
+
+okay so we've come quite a long way in
+our understanding of the mongo DB query
+language let's take a look now at using
+dot notation in the node j s driver and
+will do this by extending our
+application where we pass command-line
+arguments on to our app and build
+queries based on those arguments so here
+we're going to add an option for
+querying with respect to an IPO if you
+remember when we walked through our
+example document there's a top-level IPO
+field and the IPO field has as its value
+in embedded document including entries
+for valuation amount currency when the
+IPO happened and the stock symbol so
+we're going to use that data to extend
+the flexibility of our application in
+terms of the types of queries that we
+can do with it so if you remember we
+take our command line options and pass
+them to our query document function
+where we build the query document that
+we passed along to find taking a look at
+our query document function we can see
+that there's now a little bit of
+additional code for dealing with IPO but
+before we look at that I want to show
+you that we've added now an entry to the
+acceptable command line argh stipulating
+IPO is a name with the alias I the type
+being string okay so with this entry
+here parse well now look for a
+command-line argument for IPO and if it
+finds one make it part of the options
+object that it creates okay so
+everything in our query document
+function is the same up to this point so
+now let's take a look at how we deal
+with IPO now just to make things a
+little bit more interesting this IPO
+parameter allows us to specify yes or no
+as the value for the parameter so on the
+command line here I can specify shy and
+yes or dash I and no okay and you see
+that it get very different numbers of
+matching documents and I can also leave
+it off or rather than do both employees
+and IPO I can leave off employees and
+use the IPO parameter with either yes or
+no specified there okay so what
+of the semantics for this particular
+parameter well if the user specifies yes
+as the value for the IPO command-line
+argument then that means we want to
+query for documents where the valuation
+amount for IPO is a field that exists
+and is not equal to null okay so where
+this field exists and has an actual
+value as opposed to just being set to
+know if no is specified then we're
+looking only for documents where there
+is no evaluation amount specified now
+that can happen in one of two ways
+either the value for this field can be
+set to null or it can simply not exist
+okay now at a higher level what we're
+saying here is if I specify yes for IPO
+then I only want to see companies that
+have gone to IPO if you're not familiar
+with the term IPO IPO stands for initial
+public offering if I specify know that
+means i want to see only companies that
+have not had an IPO and finally if I
+leave off this option altogether so do
+something like this or like this then
+I'm saying I don't care show me
+companies that have gone to IPO and
+those that haven't either way is fine
+now let's take a look at the syntax that
+we use for amending our query document
+and then also exactly what we're using
+as the portion of the query document
+that pertains to IPO okay so again we
+initially constructed our query document
+using this syntax okay this is exactly
+the same thing as doing something like
+this okay exactly the same however it's
+more common to write this this way in
+our code because it's far more readable
+okay so once this statement is done we
+will have an object with one property or
+field founded underscore year whose
+value is another object with two fields
+one with a key dollar GTE and another
+with the key dollar LTE then if there is
+an employee's value specified on the
+command line we will add another field
+to our query document using this syntax
+specifying that we only want to see
+documents with a number of employees
+greater than or equal to whatever was
+specified as
+number of employees on the command line
+in this last case that number was 100
+okay and then finally here what we're
+doing is we're using dot notation to
+specify something about the valuation
+amount for the IPO embedded document
+okay so first let's take a look at what
+this looks like in terms of the query
+that gets constructed here we see our
+range for the year in which the company
+was founded our one ended range for a
+number of employees and then finally we
+see IPO dot valuation underscore amount
+okay so here we're using dot notation to
+reach into this nested document here and
+take a look at the value of IPO dot
+valuation amount for all documents in
+our collection and what we're saying
+here is I only want to see documents
+where IPO that valuation amount is a
+field that exists and remember this is
+an implicit and here are not equal to
+null so where the IPO valuation amount
+field exists and where its value is not
+null so let's contrast that with
+entering no is our value we're here
+again using dot notation but now just
+specifying null as the value for IPO dot
+valuation amount okay meaning that I
+only want to see documents where the IPO
+dot valuation amount is either set to
+null or it doesn't exist at all that's
+the semantics of specifying null as a
+field value in a query document as we've
+done here are there any questions if so
+i encourage you to hit the forums and
+ask for any clarification you may need
+about what we're doing here okay now the
+last thing that i want to touch on is
+how we're setting the query document
+value for this IPO debt valuation amount
+ok we have represented here essentially
+the three different ways in which i can
+set field values in javascript objects I
+can use this very explicit convenience
+index here something that looks very
+much like how we construct JSON objects
+in the mango shell I can use this dotted
+syntax on the query object itself
+accessing a property of that field and
+assigning a value to that property I can
+also access
+my JavaScript object as if it were an
+array now in JavaScript objects
+effectively are arrays they're
+associative arrays basically being a
+list of key value pairs so I can specify
+the key that I'm interested in inside
+square brackets much like I could if I
+were indexing into an array using a 0 or
+1 2 and so on whatever the index value
+was I was interested in in this case I'm
+actually interested in a field for which
+I'm going to designate this string as a
+key IPO dot valuation underscore amount
+okay the end result there then for a
+call to this application like this is
+that I will have a query object that has
+a founded year field an employee's field
+and an IPO that valuation amount field
+okay the value for my founded year field
+will be this embedded or nested document
+the value for my IPO dot valuation
+amount if I specified yes for IPO on the
+command line will be this embedded
+document which essentially specifies two
+constraints on the IPO debt valuation
+amount field and in the case where I
+specified no on the command line the
+value for IPO that valuation amount will
+simply be null and that's how I arrived
+at query documents that look like this
+or which look like this so in
+constructing your queries within
+JavaScript using the nodejs driver we
+simply use standard techniques used in
+JavaScript to create and assign values
+to JavaScript objects there are three
+primary ways in which we can do this one
+using this convenience syntax using
+curly braces another being this means of
+referencing a field of an object using a
+dot much in the same way that we would
+reference a method of an object using a
+dot and then finally we can access
+fields within an object in JavaScript
+using this array like syntax so this
+provides us with a nice example of using
+dot notation in the nodejs driver and
+provides a nice meaty example for some
+of the things we can do in terms of
+taking an input and using that input to
+query MongoDB
+
