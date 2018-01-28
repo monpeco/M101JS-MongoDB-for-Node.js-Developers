@@ -1825,3 +1825,297 @@ skip limit and sort or should I say sort
 skip and limit within the note jas
 driver
 
+
+---
+
+### insert one insert many
+
+https://youtu.be/tDd4PBOmlMk
+
+to this point we've talked about all
+kinds of read operations using the
+nodejs driver now let's talk about
+writing data to MongoDB in nodejs in
+particular we're going to look at the
+insert one and insert many methods for
+collections now for this lesson I'd like
+to mix things up a little bit and look
+at a different type of data Twitter
+provides a pretty amazing REST API that
+is exactly the type of thing that we
+would use to harvest a bunch of data for
+some sort of analysis to say test an
+architecture for a social media
+application and a variety of other uses
+what I like about the rest api is that
+it's particularly well suited to a
+couple of nice examples that'll allow me
+to illustrate the use of insert one and
+insert many in the driver now within
+this API we are going to be making use
+of the statuses user timeline endpoint
+and a portion of the API that allows us
+to stream tweets on a particular subject
+as they happen now a detailed discussion
+of how to use the Twitter API is beyond
+the scope of this particular class
+however the documentation Twitter
+provides is excellent and all you really
+need in order to get started as a
+Twitter account and to set up your
+account with a couple of keys that will
+allow you to send queries to the API now
+one thing we're not going to look at but
+which is a fantastic part of this API in
+my opinion is the fact that I can
+actually create tweets using post
+methods to the API so I can
+programmatically create tweets and this
+is in fact how a lot of websites you see
+that allow you to essentially tweet
+about something on their site work they
+use the Twitter API to allow you to push
+content to a Twitter feed from a
+third-party application for example at
+MongoDB University we might provide a UI
+that with a click of a button would
+allow you to push a tweet out that says
+I just completed a homework NM 101 j/s
+so let's look now inserting data into a
+MongoDB collection using this API very
+briefly I want to touch on the data
+model for statuses or tweets and point
+out that tweets have a date a unique
+identifier here's the text for a tweet
+as part of the text field and then
+there's a user embedded object that
+contains the screen name this is the
+tweet posted on MongoDB s Twitter handle
+and there are a variety of other details
+in
+here having to do with media if there
+were pictures and retweets etc for
+purposes of this lesson we're going to
+keep things simple so let's look at an
+example of using insert one now all of
+this here is simply me using environment
+variables that I've set up that contain
+the keys that I need in order for
+Twitter to actually allow me to
+authenticate and pull data so scrolling
+down what i'm doing here is connecting
+to MongoDB note that i'm connecting to
+the social database and then with the
+twitter client that i created here i'm
+going to use this stream method
+accessing statuses and filtering using
+the keyword marvel i'm a big spider-man
+fan and in general marvel comics so I
+kind of like to see what's being tweeted
+on those subjects now what we're going
+to do here in the callback to stream is
+first log the text of the tweet remember
+that the text field holds the actual
+what we consider to be the tweet itself
+or the status update and then we're
+going to access the statuses collection
+of our social database and we're going
+to call the insert one method now to
+insert one we're going to pass the
+status status is going to be a JSON
+object of this kind which MongoDB will
+readily accept as a document in the
+callback for insert one well simply
+report that we inserted a document and
+what the inserted ID was okay now one
+thing you may have missed as we went
+through this is that in the event
+handler for this call to stream what
+we're actually doing here is setting up
+to event handlers okay the first one is
+in the event of data meaning a tweet
+came in we are going to actually do this
+insert and the second one is if there's
+an error will simply throw the error
+okay so the main job for the call back
+here is simply to set up these event
+handlers this callback will be called
+every time a tweet is generated that
+matches this filter term here marvel
+okay so we're keeping our HTTP
+connection open and the Twitter API is
+streaming data to us as it has data that
+matches our request so now let's run
+this thing ok so I connect and I can see
+the tweets start to come in ok so now
+I'll
+kill this and let's go in to the Mongo
+shell and see what we got so I'm going
+to use the social database and what I'll
+do is query the statuses collection and
+we can see that there's quite a bit of
+data here and so since the tweets are
+big what I'd like to do instead is
+project out just the text and filter out
+underscore ID okay and so we got this
+Marvel cleaners tweet not what we were
+expecting but then there are a lot of
+Marvel Comics related tweets here as
+well ok and you'll remember seeing some
+of these stream by as we watched our
+application run okay so that is an
+example of insert one using the Twitter
+NPM module which relies on the Twitter
+API as an exercise to you the student
+you might take a look at getting this
+code up and running with your own
+Twitter account there are pretty good
+instructions on the documentation for
+the Twitter package and as I said the
+twitter api docs are quite good okay so
+for the second application i want to
+show you in this lesson we're going to
+look at pulling tweets from a set of
+user timelines that we want to follow
+continuing with this theme of Marvel
+Comics I'm going to use this as an
+example of insert many so we're setting
+things up again using the Twitter module
+four men p.m. but what I'm going to do
+here is rather than stream data to this
+application I am instead going to make a
+get request to the user timeline
+endpoint for the API now let me talk
+about the basic idea for this
+application so imagine that we're
+harvesting tweets because what we'd like
+to do is build up a collection of social
+network data for some analysis that
+we're doing so imagine that we have this
+app running daily it kicks off say at
+6am every day and what we're going to do
+is pull all the tweets in the past day
+that have been produced by these three
+different screen names now of course for
+an application like this we'd probably
+have hundreds and hundreds of screen
+names that were following potentially
+thousands or maybe we'd use some other
+mechanism for acquiring tweets this is
+the one we're going to use in this
+example because it's relatively
+straightforward okay so the first thing
+that I'm going to do here is I'm going
+to loop through each screen name and I'm
+going to do a find against my existing
+statuses collection so for each of these
+screen names
+I'm going to do a query and sort all the
+statuses that I have for each screen
+name and limit to one now here I'm
+sorting in descending order and limiting
+to one because what I'd like to know is
+what is the status ID for the very last
+tweet that I pulled for each of these
+screen names now what that's going to do
+for me is it will allow me to request
+from the Twitter API all tweets that
+have occurred since that particular
+status ID so I won't be pulling down any
+duplicates wasting bandwidth and
+creating some noise in my data set so
+having issued this query we can see that
+we're pulling in some of what we've
+learned from earlier lessons I'll then
+call to array on the cursor knowing that
+I should just have one document or
+perhaps 0 if this is the first time I'm
+running this program ok so the very
+first thing I do inside the callback for
+two array is I checked the length of the
+docs array that's passed in if it's
+equal to 1 then I know that I've
+previously pulled some tweets for that
+particular screen name if I haven't they
+neither this is the first time I'm
+running the program or I've say just
+added a new screen name ok the next step
+here then is i'm going to set up this
+parameters object because i'm going to
+end up passing that in my request to the
+twitter api so some of the parameters
+that are of interest to me here are
+screen name because i want to get all
+statuses produced by this particular
+user and then there's this sense ID
+parameter this is going to allow me to
+pull all statuses since the last one
+that I saw for a particular user and
+finally I'm going to specify a count I'm
+going to limit the number of statuses I
+pull from an individual screen name to
+10 primarily so I don't hit my limit in
+working through this example and then
+showing it to you guys so here then if I
+have in fact pulled statuses for this
+particular screen name in the past I'm
+going to specify my sense ID value in
+addition to the screen name as well as
+the count if I've not previously pulled
+statuses or at least there are none in
+the collection here then what I'll do is
+I'll simply leave the sense ID off of
+the parameters object that I'm building
+here ok so with the parameters object
+built then what I'm going to do is use
+my Twitter client issue a call to the
+get method for this client again
+provided in the two
+NPM package I'm going to pass the params
+that I constructed here and then wait
+for my call back to be called with all
+of the statuses that the API is going to
+provide back to me for this particular
+screen name okay once I get those
+statuses back then I'm going to go ahead
+and call the insert many method on the
+statuses collection okay so insert many
+much like insert one functions more or
+less as we would expect it so happens
+that this callback will be passed an
+array of statuses from the response we
+get back from the Twitter API we're
+going to pass those along to insert many
+and then execute this callback now this
+callback does a little more than log
+what happened and then just make sure
+that we've successfully processed all of
+the screen names before we close the
+database connection okay so let's go
+ahead and run this okay so ran through
+pretty quickly and here we get a chance
+to see some of the statuses we pulled
+back and the IDS for those statuses as
+they went into the database so now we've
+looked at an example of using insert one
+to process tweets that come in from the
+streaming interface to the Twitter API
+and we've looked at insert many to
+process status updates that we've
+requested in bulk from a variety of
+different users timelines the key
+takeaway here is that both insert one
+and insert many function as expected in
+that insert one expects to receive a
+single document as its first parameter
+and insert many expects to receive an
+array of documents as its first
+parameter both of them take a callback
+that allow us to process errors or the
+results in some fashion and the results
+that we get back in both cases tell us
+what IDs were inserted whether it was
+one ID in the case of insert one or
+multiple IDs in the case of insert many
+
+
