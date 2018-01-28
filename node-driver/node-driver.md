@@ -2119,3 +2119,296 @@ one ID in the case of insert one or
 multiple IDs in the case of insert many
 
 
+---
+
+
+### delete one delete many
+
+https://youtu.be/gNPsatcQPUA
+
+ok now let's finally talk about deleting
+documents from MongoDB in the note j/s
+driver as an example I'd like to take a
+look at cleaning up our company's
+collection a little bit as we
+encountered previously there are some
+duplicate records in this collection and
+we can see one example if we do a search
+for the permalink thomson reuters now
+permalinks should be unique within our
+collection however if we do this query
+and then project out the name and the
+updated at fields will see that there
+are in fact two records both for
+companies named Thomson Reuters same
+company both of which were updated at
+exactly the same time stamp but with
+different object ids now for a real data
+cleaning operation we'd probably want to
+do a fairly rigorous assessment to see
+whether there were some subtle or
+significant differences between these
+two records and other records that
+appear to be duplicates but for purposes
+of learning a little bit about the
+delete operations in MongoDB we'll just
+assume that any records that have
+identical permalinks and updated at
+values are duplicates and we'll build a
+little application to eliminate those
+duplicates now before we get into
+actually deleting any records let's get
+a sense for the size of the problem in
+this data set now one way in which we
+can approach this is to do a query for
+all permalinks if we sort them those
+that are identical should occur in
+sequence and if we use our cursor for
+each method will stream them in without
+using very much memory at all really and
+we can simply compare successive values
+for permalink to see whether or not we
+have duplicates this is a pretty
+standard technique for identifying
+duplicates when you have a collection of
+items okay so what I'm going to do here
+is create a query document I'm going to
+specify that I want to see permalink
+values that exists and that are not
+equal to true something we've seen
+several times now and I'm going to
+project out the permalink and the
+updated at values and because I'm not
+excluding it the underscore ID value
+will also come through okay so then we
+go into defining our query passing in
+the query document and then we're going
+to apply a projection and
+finally a sorting here I'm sorting by
+permalink into a sending order now I
+want to keep track of the number that
+need to be removed so I'll do that with
+this variable here and I'm also going to
+create a variable called previous to
+which I could compare each document as i
+iterate through them in my callback
+function here again remember if I see
+the current document having the same
+permalink and updated at value as the
+previous document then I'll know I've
+got a duplicate and I will identify that
+second document as one to be removed ok
+so looking at the iterator for each I
+can see that I've got a permalink here I
+can see that I'm comparing the
+permalinks for the current document and
+the previous one and the updated at
+value for the current document and the
+previous one ok if both of those are
+equal then I'm going to go ahead and log
+that permalink update my number to
+remove and then i will call delete one
+here ok but first what I'd like to do is
+just get a sense for how many documents
+we have that are duplicates ok and then
+at the bottom of this iterator of course
+I'm going to update the previous
+document to the current one that I've
+just finished processing so the next
+time through previous will be that one
+that I've just concluded processing ok
+so let's run this and we've got a big
+error here let's see what's going on
+we've got a big stack trace it just
+print it out let's see what the problem
+is ok so this is interesting let's take
+a look at it executor error during find
+command operation failed sort operation
+used more than the maximum bites
+permitted ok so let's talk a little bit
+about what's happening here note that
+we're stipulating that we want to do a
+sort here ok in a later section when we
+talk about indexes we will learn that we
+can actually do sorting on the database
+side so within MongoDB itself provided
+we have set up an index that MongoDB can
+use to do our sort so for example one
+index in this case would be an index on
+permalink we don't have such an index
+set up so what's going to happen is the
+system is going to try to do a sort in
+memory rather than in the database so as
+a little bit of foreshadowing what I'd
+like to do here is just go into the
+Mongo
+and I'm going to create an index again a
+little bit of foreshadowing we're not
+quite ready to talk about indexes yet
+but if I execute the create index
+command then I will create an index on
+the permalink field on this collection
+and this will enable MongoDB to be able
+to sort my query using this index merely
+by walking the keys in the index and
+that's all I'm going to say about
+indexes for now but this will solve the
+problem that we've just seen over here
+so now if I try to run this okay what I
+get out is a list of all of the
+permalinks that seem to be duplicates
+okay so let's check a couple of these
+how about this one RSS mixer if I go
+into the Mongo shell and I search for
+that permalink again to documents same
+updated at Value going back here let's
+check another one swap logic okay and
+again duplicates okay so now I think
+we're ready to actually go ahead and
+delete these documents so let's talk
+about how delete one works so again
+remember that what I'm going to do here
+is loop through a sorted list of all the
+permalinks and when I find two
+successive documents that have the same
+permalink and updated at I know i found
+a duplicate and i'm going to call delete
+one now delete one takes a filter which
+is basically a query document and it
+will delete the first document it finds
+that matches this query or filter okay
+now remember that I am not getting rid
+of the underscore ID on my projection
+here as part of this query where I'm
+getting the sorted list of permalinks so
+I have that underscore ID available to
+me and the reason why I didn't get rid
+of it was because I want to specify the
+underscore ID as my filter to delete one
+there will be only one value that
+matches that because under squared D
+values of course have to be unique so i
+will delete the second of the two
+documents i found that have the same
+permalink and updated at value each time
+I find myself in that situation in this
+iteration call back okay and then in the
+callback for delete one I'm just going
+to check for an error and print out the
+result that I got back ok now let's run
+this
+and this time when I run delete one it's
+actually going to do the deletion okay
+and we can see here that we got back
+same output but we're also getting back
+what looks like responses from a call to
+MongoDB and in fact that is what we're
+seeing because we're printing out the
+result of having done our delete one
+when we see an okay of one we know that
+it succeeded and n of 1 indicates how
+many records were deleted because we're
+calling delete one we expect to see just
+one document deleted each time now if we
+try to run this again what will happen
+basically is nothing because we've
+already deleted all of those duplicates
+if we go back to our Mongo shell and
+check these values now swap logic has
+just won let's look at RS mixer again
+just one how about thomson reuters and
+just one because we've deleted all the
+duplicates okay now you may have noticed
+that calling delete one every time
+through this iterator is a pretty
+inefficient means of performing this
+task okay there are more than 900
+duplicates here so we're doing a round
+trip to the database more than 900 times
+that's crazy so delete one is perfectly
+fine for small one off operations where
+you need to delete a document but when
+you've got a larger task like what we
+have here what you really want to use is
+delete many okay so here's an alternate
+version of that same application the
+only real difference here is that rather
+than deleting documents each time
+through my iterator instead what I'm
+doing is I am simply marking the
+documents for removal by the underscore
+ID field so I'm keeping track of a
+marked for removal array every time I
+find one of those matches for permalink
+and updated at i push the document ID on
+to my march for removal array so the
+callback that gets called as soon as I'm
+done iterating is the place where I
+really want to be doing my delete and
+you can see here that I'm making a call
+to delete many now delete many like
+delete one also takes a filter or query
+document as its first argument what i'm
+doing here is i'm saying as my filter
+look at the underscore ID field and for
+every underscore ID found in this array
+that I'm going to specify as the
+argument for dollar in delete those
+documents now delete many and contrast
+to delete one will delete all documents
+that match our filter okay so I'm going
+to use the dollar in operator on the
+array that I've built up here pushing an
+additional document ID on each time I
+find a match and then i will call delete
+many identifying every single one of
+those document IDs for the documents
+that need to be deleted and in this call
+back then i can report on the results of
+the delete many operation report how
+many documents were removed and finally
+close the database connection alright so
+now let's run this however if you'll
+remember I've actually already deleted
+all of those documents using the earlier
+version of this application that we
+looked at so what I'm going to do is
+basically just reset our database we're
+using the crunch based database so I'm
+going to simply drop the database and
+then I'm going to mongo import it once
+again again remember the way Mongo
+import works is I specify the database
+and the collection into which I would
+like to dump all of those JSON records
+held in whatever JSON file I'm passing
+to Monaco import in this case it's my
+company's JSON file ok so my collection
+is built again if I go and look for
+Thomson Reuters sure enough i'm going to
+see two of them again so now let's call
+this delete many version of the
+application and again I'm getting that
+same sort operation issue so I can take
+care of that by once again creating the
+index when I drop the database all the
+indexes disappear as well so I need to
+recreate the index and now I run my
+delete many operation note that the
+operation succeeded there were 907
+documents removed and I'm actually
+reporting that as well based on the
+length of the mark for removal array so
+what the database report says the number
+of documents to be removed matches what
+i calculated inside my own application
+as the number of documents that needed
+to be removed ok and now if we go back
+to the Mongo shall we look for thomson
+reuters
+just one RS mixer just one of those and
+swap logic just one of those okay so
+that is a good overview of using delete
+one and delete many what they need to be
+passed as parameters and what they
+return to the callback that we provide
