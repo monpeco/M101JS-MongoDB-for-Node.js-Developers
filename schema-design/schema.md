@@ -604,3 +604,117 @@ Because the combined size of the documents would be larger
 than 16 megabytes.
 
 
+---
+
+### m101 13 one to many
+
+https://youtu.be/EIaP1KbVkUc
+
+Let's talk about one to many relationships.
+So a one to many relationship is where there's two entities
+and there's many, many entities or many entities that
+map to the one entity.
+So for an example, you have a city and you have the people
+or persons who live in that city.
+So an example would be New York City, which has 8 million
+people in it.
+How are you going to model that?
+Well, we could go through it and think about different ways
+you might want to do it.
+So, you might say, well, I'm going to have a city
+collection.
+And in that city collection, I'm going to have the
+attributes of the city, like the name of the
+city, and its area.
+And then I'm going to have the people that live in the city
+as an array.
+But that won't work.
+Because, of course, there are way too many people.
+8 million people and all their documents and all their
+information, it isn't going to fit inside this.
+So, as a result, you can't do that.
+You could say, well, I'll flip it on its head.
+So instead, I could say, well, I'm going to have a people
+collection.
+And the people collection, in each document, I'm going to
+have a name, like Andrew.
+And then I'm going to have the city.
+And that's going to be another document.
+And it's going to have a name, like New York, and an area,
+and everything else.
+Now the problem with this design is that if there are
+obviously multiple living in New York, so what I've done is
+I've duplicated this data in multiple documents, which is
+going to open me up to inconsistencies because I have
+to keep the city information updated across all the people
+who live in the city.
+Now, in certain designs, that might be acceptable.
+But I probably wouldn't recommend it in general.
+So given that, what's the best way to do it?
+Well, in this case, where there truly is one to many,
+one city with many people, the best way to do it is probably
+to use true linking.
+So we'll use true linking.
+So for true linking, we're going to have a people
+collection.
+And in that people collection, we're going to have something
+like the name of the person, like Andrew, and then,
+probably, my city, which let's assume that the city names are
+unique, New York City being unique, and other
+attributes about me.
+And then, in the city collection, I would have an
+underscore ID being New York City, and other attributes
+about the city listed out.
+So, in this case, I would link from the item
+where there was many.
+So, I would have a collection of the many, the people.
+And I would link into the one, into the city.
+And again, knowing we have no foreign key constraints, you
+just have to make sure that you're consistent about it and
+that you don't put a city in that isn't also an underscore
+ID for the collection that it refers to.
+So that's a fine solution for one to many.
+And it requires two collections.
+So that requires two collections.
+But what if it isn't one to many, but
+instead it's one to few?
+Which is still a one to many relationship, but is actually
+a lot easier to model inside mongoDB.
+So the example I gave you before was these blog posts
+and the comments.
+And you saw, when we went over the schema for the blog, that
+there are multiple comments that go to one blog post.
+But it isn't very many of them.
+So it's blog post, sorry, to comment.
+There's is one of these and maybe 10 of these.
+And, so in that case, it's feasible to have a collection
+of the one.
+So to have a post collection, which is what we did.
+And then, within each post, you had the name of the posts,
+and then somewhere you had an array of the comments.
+And then, that array contained all the comments, but there's
+only a few of them for each post.
+And again, we don't have the duplication of data problem
+because every comment is only within a single post.
+So in this particular model, it works very well to have a
+single collection.
+And we're going to have a single collection of the one,
+of the posts.
+And then put the many embedded.
+So those are the two different ways to handle the one to many
+relationship, depending on whether it's one to few, or
+one to many.
+If it's truly one to many than two collections works best
+with linking.
+And if it's just one to few, well, then you could probably
+get away with a single collection, like we did in the
+blogging example, where you just embed the
+items within it.
+All right, so it's time for a quiz.
+So, when is it recommended to represent a one to many
+relationship in multiple collections?
+And the answers are, always, whenever the many is large,
+whenever the many is actually few, or never.
+What's the answer?
+
+
