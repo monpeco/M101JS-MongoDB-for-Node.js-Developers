@@ -252,6 +252,8 @@ Author
     Password : "    "
 }
 
+```
+
 so we saw how we modeled our blog in a
 relational system so let's talk about
 how we would model this in MongoDB
@@ -297,6 +299,77 @@ the author's name maybe email again the
 password which is again hashed and not
 in plain text
 
+One document is all that is needed.
+
+That's not to say that you couldn't break it up into multiple documents, or that there are no advantages in doing so in some circumstances, but there will also be disadvantages; we'll be talking about this more in other lessons on schema design and data modeling. But only one document is needed.
 
 
-```
+---
+
+### m101 7 living wo constraints
+
+https://youtu.be/YFRMkDPaams
+
+One thing I think about a lot with mongoDB, because I come
+from the world of relational before I started working at
+10Gen and thinking a lot about the advantages of mongoDB, is
+that there are a lot of great things about relational.
+And one of the great things about relational is that it's
+really good at keeping your data
+consistent within the database.
+And one of the ways it does that is with foreign key
+constraints.
+So what is a foreign key constraint?
+Well, a foreign key constraint is that let's say these are
+actually more like tables, but these are collections in the
+case that we showed, what guarantee is it that when you
+insert a document into the comments collection, that this
+post ID will actually appear in this post collection.
+That's a foreign key constraint.
+And the answer in mongoDB is there's no guarantee.
+It's really up to you as the programmer to make sure that
+your data is consistent in that manner.
+And that when you store something in a collection, if
+you mean for this to be an index into the post collection
+that you guarantee that.
+Because the database won't guarantee that for you.
+And maybe in a future version of mongoDB, we will guarantee
+it, but we don't offer a way to do that today.
+Same thing with this.
+And so, how do you live in a world without these foreign
+key constraints without constraints and keep your data
+intact and consistent?
+And the answer is that embedding actually helps.
+And that's why this alternative design that I
+showed isn't a particularly good one.
+So let's look at the particular case we just talked
+about, which is that we had this comments collection and
+it had a post ID that we could not guarantee was in the post
+collection.
+Notice, when we embedded the data, we've solved this
+problem entirely.
+Because now, since the data appears directly inside the
+document, like the comment appeared directly inside the
+document, there's no way for me to insert something where
+the comment's post ID isn't in the post collection.
+That information is already tied together when you
+pre-join this data.
+Same thing with the tags.
+There's no way that we can accidentally store a tag into
+the tag collection where the post ID isn't in the post
+collection because I've already pre-joined the data
+and it's in here.
+And so, what I just wanted to point out is that you should
+pre-join the data.
+You should embed the data in ways that make sense for your
+application for lots of different reasons.
+And one of them is, it makes it a lot easier to keep the
+data intact and consistent.
+All right, so time for a quick quiz.
+And the quiz is, what does living without
+constraints refer to?
+And the answers are, living every day like it's your last,
+saying whatever you want when you want to, keeping your data
+consistent even though mongoDB lacks foreign key constraints,
+or wearing no belt.
+
