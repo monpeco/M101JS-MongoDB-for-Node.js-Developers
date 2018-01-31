@@ -2571,4 +2571,68 @@ MongoDB and trying to design a schema around the access
 patterns that you see in your actual application.
 
 
+---
+
+### m101 18 representing trees
+
+https://youtu.be/lIjXyQklGWY
+
+One classic problem from the world of schema design is how
+do you represent a tree inside the database?
+Let's look, for example, at the problem of representing
+the e-commerce categories in a e-commerce site, such as
+Amazon, where you might have home, outdoors, winter, snow.
+And the idea here is that you've got these products.
+And they're in a products collection.
+They have a product name and a bunch of
+attributes in the product.
+And they have some category, like say, category seven.
+And then, you have some other category collection, where you
+can look up category seven, you can see the category name,
+some of the properties about the category.
+And one way to model it is you could keep its parent ID,
+right here.
+And that would be the way you might do it in a simple
+relational database.
+But this doesn't make it very easy to find all the parents
+to this category.
+You'd have to iteratively query, find the parent of
+this, then find the parent of that, until you get all the
+way to the top.
+So an alternative way to do it, inside mongoDB, is to be
+able to list ancestors or children.
+So let's think about that and how that would work.
+So you could decide to list all the
+children of this category.
+But that's also fairly limiting, if you're looking to
+be able to look and find the entire sub-tree that is above
+a certain piece of the tree.
+Instead, what works pretty well, and again, enabled by
+the ability to put arrays inside mongoDB
+is to list the ancestors.
+So let's say I decided to list all the ancestors of this from
+the top in order.
+Now, using this one piece of information I can find all of
+the parent categories of this category.
+If I want to list the bread crumbs and make it easy for
+the user to navigate the site.
+And again, the ability to structure and express rich
+data is one of the things that makes mongoDB so interesting.
+This would be very difficult to do in
+a relational database.
+Now, in terms of how you represent the data for
+something like a product category hierarchy, again, it
+all depends on your access pattern.
+It depends on how you believe you're going to need to show
+the data, access the data for the user.
+And then, based on that, you know how to model it.
+All right, it's time for a quiz on
+representing trees in mongoDB.
+Given the following typical document for an e-commerce
+category hierarchy called categories, and here's the
+document that's in the category collection, which of
+these queries will find all the descendants of the
+snorkeling category?
+And this is the snorkeling category right here.
+Which of these queries?
 
