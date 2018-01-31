@@ -834,3 +834,107 @@ And that may not map to what the
 application wants to permit.
 
 
+---
+
+### multikey
+
+https://youtu.be/KtIY4Q1tUao
+
+One of the reasons that linking and embedding works
+so well within MongoDB is because of the existence
+of a feature called multikey indexes.
+I'm going to talk a little bit about multikey indexes
+and why they're so useful within MongoDB.
+Now, let's say you had a schema that included students
+and teachers, and this is a schema that we've seen before.
+And these are two example documents
+from these collections.
+The students collection might have
+a separate document for each student
+with a unique underscore ID, a name for each student,
+and a key for the teachers, where
+the value is a list of the underscore ID values for all
+the teachers that the student has.
+And on the other side, we have this teachers collection,
+which has a document for each teacher
+with a unique underscore ID, an integer
+value, and a name for each teacher.
+And here you can see we have Tony Stark is
+the only teacher in the collection right now.
+And so this says right here that Andrew has had four teachers
+and that one of them is Tony Stark.
+Now, there are two possible queries,
+or I should say two obvious queries.
+And one is, how can I find all the teachers
+that a particular student has had?
+And the other is, how can I find all the students who
+have had a particular teacher?
+Now, let's go over the first one which
+is, how do I find the teachers for a particular student?
+Now, that one is straightforward because I can simply
+search this collection.
+I can query the students collection.
+I could do db.students.find.
+I can specify the student I'm looking for,
+and then return the teacher's key with its values,
+and then I'll know the teachers.
+But what about finding all the students who
+have had a particular teacher?
+That's a more difficult query.
+That query is going to use our set operators.
+And in order for that to be efficient,
+we need to be able to use an index.
+And it's going to be a multikey index that makes this possible.
+So let me show you in the shell how this looks.
+All right.
+So we have two different collections already
+set up here.
+We have a students collection, and we
+have a teachers collection.
+Here's the students collection, and here's
+the teachers collection.
+And we can see that the students collection has
+a list of students, including myself,
+and the teachers that I had.
+And here in the teachers collection,
+we have a list of professors, and these
+are the professors that were teaching
+when I was at Stanford.
+And we can see that, for instance, I
+had the teacher 0 and 1, which are
+Mark Horowitz and John Hennessy.
+Now, if we wanted to add a multikey index on this teachers
+key, we could do it as follows, db.students.ensureIndex
+'teachers' 1.
+And we haven't gone over indexes yet,
+but this is how you'd create them.
+And now the shell returns information
+that before there was one index, which
+was the index on underscore ID which is in every collection,
+and now there are two.
+And now we're going to do a query that's
+going to use that index and be efficient.
+So let's find all the students who
+had Mark Horowitz and John Hennessy as professors.
+So Mark Horowitz is 0, and John Hennessy 1.
+So we'll db.students.find 'teachers," now we're all.
+There we go.
+So now, we do a query, and we ask,
+find me all the students that had
+both 0 and 1 in their teacher's value.
+And we find that it's me, Andrew Erlichson,
+and it's also Richard Kreuter.
+He has also 0 and 1 in the teacher's value.
+Now, the question is, how do we know that that used an index?
+Well, there's a little command that we haven't talked
+about yet, but it works like this.
+We can append explain at the end of this query.
+And if we append explain at the end of this query,
+it will tell us what it did when it was performing the query.
+And if we do that, we can see here
+that it returns a bunch of information,
+but what it tells us is that it used the BtreeCursor
+teachers underscore 1 index, which is a multikey index.
+And that's how multikey indexes work
+and why they make linking and embedding an efficient way
+to represent information within MongoDB when you query it.
