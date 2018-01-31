@@ -225,3 +225,78 @@ And in some applications, you might want to allow it and it
 doesn't matter.
 Or you might want to keep it up-to-date in the application,
 but mostly we're going to avoid it.
+
+---
+
+### MongoDB Model for Blog
+
+https://youtu.be/lkucDar6I3E
+
+```
+Post
+{
+    _id : "   ",
+    Title : "     ",
+    Author : "     ",
+    Content : "    ",
+    Comments : { [ {Author : " " , Content : " " , Date : " "} , {} , {}] } ,   
+    Tags : ["MongoDB" , "Awsome"]
+}
+
+
+Author
+{
+    _id : "   ",
+    Name : "     ",
+    Email : "     ",
+    Password : "    "
+}
+
+so we saw how we modeled our blog in a
+relational system so let's talk about
+how we would model this in MongoDB
+hopefully you'll find that it's much
+simpler first we still need collections
+so we still need places to put things so
+we would first probably have our posts
+collection here and that document would
+look a little bit like this so we have
+our underscore ID field which has you
+know some value in it and then we'd have
+the title of this we might have our
+author here and that could be his
+username or as email or kind of whatever
+we're looking or we could store both
+author and user name and anomalies a
+little bit we'd have the content of this
+thing comments we can just kind of put
+right in line here so comments could be
+an array and so let's do one comment
+here where we maybe have the author of
+that comment in here as well as the
+content of it and maybe the date so
+that's one comment but we could put a
+couple more back here and so we can
+store the comments in line directly we
+can do the same thing with tags although
+in tags are just kind of strings so
+MongoDB and will store awesome as well
+so tags and then maybe a date down here
+so at the end of the day we've got posts
+and comments are embedded directly in
+line it's very natural and it's a good
+way of doing it we call that embedding
+so embedding documents embedding arrays
+tags is here so no separate table or
+anything for that so all we really left
+then is we kind of need an author's
+collection as well and that would look
+very similar it's mostly flat so we
+would have an underscore ID there and
+the author's name maybe email again the
+password which is again hashed and not
+in plain text
+
+
+
+```
