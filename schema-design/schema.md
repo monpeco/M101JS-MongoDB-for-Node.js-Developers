@@ -373,3 +373,111 @@ saying whatever you want when you want to, keeping your data
 consistent even though mongoDB lacks foreign key constraints,
 or wearing no belt.
 
+---
+
+### m101 9 living wo transactions
+
+https://youtu.be/FfRr3qjRfww
+
+#### Atomic operations
+
+* Restruture (into a singel document)
+* Implement in Software (Semaphore, ...)
+* Tolerate a little inconsistency
+ 
+
+lack of transactions support within MongoDB.
+And from the relational world a lot of you know that
+transactions offer atomicity, consistency, isolation, and
+durability.
+But, although we don't have transactions within MongoDB,
+we do have atomic operations.
+So what does that mean?
+Well, atomic operations mean that when you work on a single
+document that that work will be completed before anyone
+else sees the document.
+They'll either see all the changes that you
+make or none of them.
+And using atomic operations, you can often accomplish the
+same thing you would have accomplished using
+transactions in a relational database.
+And the reason is, that in a relational database, you need
+to make changes across multiple tables, usually
+tables that need to be joined, and so you want to
+do that all at once.
+And to do it, since there are multiple tables, you'll have
+to begin a transaction and do all those updates and then end
+the transaction.
+But with MongoDB, since you're going to embed the data, since
+you're going to pre-join it in documents--
+and they're these rich documents that have
+hierarchy--
+you often cam accomplish the same thing.
+For instance, in the blog example, if you wanted to make
+sure that you updated a blog post atomically, you can do
+that because you can update the entire blog post at once.
+Whereas, if it was a bunch of relational tables, you'd
+probably have to open a transaction so that you can
+update the post collection and the comments collection.
+So what are your approaches that you can take in MongoDB
+to overcome a lack of transactions?
+And the answer is there are really three different
+approaches.
+And I want to go over them real quickly.
+The first is that you can restructure your code so that
+you're working within a single document and taking advantage
+of the atomic operations that we offer within that document.
+And if you do that, then usually you're all set.
+And you won't miss the transactions at all.
+The second thing you can do, if you'd like, is you can
+essentially implement some sort of locking in software.
+You can do this by creating a critical section.
+You can essentially build a test, test, and set using find
+and modify.
+You can build semaphores if you want to.
+And, in a way, this is the way the larger world works anyway.
+If you think about it, if one bank needs to transfer money
+to another bank, they're not living in the
+same relational system.
+And they each have their own relational databases often.
+And they have to be able to coordinate that operation,
+even though you can't begin transaction and end
+transaction across those database systems, only within
+one system within one bank.
+So there's certainly ways in software to
+get around the problem.
+And the final approach, which often works in modern web
+applications and other applications that take in a
+tremendous amount of data, is to just tolerate a little bit
+of inconsistency.
+An example would be if you're talking about a friend feed in
+Facebook, it doesn't matter if everybody sees your wall
+update simultaneously.
+It's OK if one person's a few beats
+behind for a few seconds.
+And then they catch up.
+It often isn't critical in a lot of system designs that
+everything be kept perfectly consistent and that everyone
+have a perfectly consistent and the
+same view of the database.
+So you could simply tolerate a little bit of inconsistency
+that's somewhat temporary.
+So those are three approaches.
+You can restructure to make sure that everything happens
+within a single document so that you get the advantages of
+atomic operations.
+You can implement whatever you're
+looking for in software.
+Or you can tolerate a little bit of a consistency that you
+might get without transactions.
+All right, so, let's do a quiz.
+So here's the quiz.
+Which of the following operations operate atomically
+within a single document in MongoDB?
+Check all that apply.
+And the choices are, the update command, the find and
+modify command, the add to set command within an update, or
+the push, again within an update.
+And if you remember add to set, add something to an array
+list, if it's not there, push, push, is at
+the end of the list.
