@@ -718,3 +718,119 @@ whenever the many is actually few, or never.
 What's the answer?
 
 
+---
+
+### m101 15 many to many
+    
+https://youtu.be/fEYYjZ7zEHc
+
+The next relation we're going to go over is the
+many-to-many relation.
+An example of a many-to-many relation
+would be books to authors.
+Each book could have more than one author.
+And each author could have more than one book.
+Or another example would be students and teachers.
+A student has multiple teachers, and a teacher has
+multiple students.
+So the thing to note in both these cases and in many world
+cases is that, although it is a many-to-many relation, there
+are not a very large number of authors for each book or a
+very large number of books for each author.
+Instead, it tends to be few to few.
+And that's going to allow us to use the hierarchy and the
+rich document structure of MongoDB pretty easily, whereas
+it wouldn't be possible if it were truly many-to-many.
+So let's look at books to authors.
+Although there are probably a large number of books and
+there are probably a large number of authors, as we said,
+each book probably has a small number of authors, and each
+author has a small number of books.
+And so what we can do is we can link them by creating an
+array, write the document.
+So for instance, in this author's document that I'm
+showing on the right, I can put a book ID right in here,
+plus the book ID of other books that this author might
+have written.
+Now, I could go in both directions.
+And I could, if I wanted, also create an author's key in the
+books collection and have an array of
+authors for each book.
+In this case, this particular book, Gone with the Wind,
+written by Margaret Mitchell, has only a single author.
+So I'll just put a single author in here.
+And whether this makes sense depends a lot
+on the access patterns.
+If you want to be able to quickly traverse from a book
+to its authors, then it could make sense, without doing
+additional query, to have it link in that direction.
+And vice versa if you want to start with authors and get
+quickly to books.
+Now, having them linked in both directions probably
+wouldn't be my preference, because it creates the
+opportunity to have the data be inconsistent if it's not
+tied together well.
+But you can do it, if you want to, for performance reasons.
+Now, the other option is you could just embed it.
+So you could, for instance, rather than have this array
+here, we could just embed the book--
+I'm going to cross this out.
+And you could embed the book right in the author collection
+and put information about the book that the author has
+written right in here.
+But I don't love that, because what's going to happen is that
+the book is going to wind up--
+not often, because it doesn't usually have multiple
+authors-- but it could wind up in the author's collection
+multiple times, duplicated, and open this up to having
+update anomalies, modification anomalies, where the
+information doesn't stay consistent.
+Now, if that's what you need for performance reasons, you
+need to embed the book inside the author collection, then by
+all means, do it.
+But I'd avoid it unless you need to do it
+for performance reasons.
+In this particular case, I'd make books and authors both a
+first-class object.
+It's also important to remember that there are no
+foreign key constraints inside MongoDB, as we
+talked about earlier.
+So there's no guarantee that, if you put an ID here, that
+it's going to appear over here.
+All right, so next, let's talk about the students and
+teachers relationship.
+So students and teachers looks a lot like books and authors,
+where a teacher can have multiple students, and a
+student can have multiple teachers.
+And I'd probably handle it the same way.
+I'd have a student collection, and I'd have a teachers
+collection.
+And I'd have the information about the student listed in
+the student collection, and the information about teacher
+listed in the teacher collection.
+And then I would link in one direction or the other.
+And I would have array of items.
+If I want to know the students for this teacher, I could put
+that right in here and find the students very quickly.
+And I might link in both directions and also have an
+array of teachers in my students collection.
+Now, again, you could embed.
+At the risk of duplicating data, you could decide that
+you want to put the teachers inside the student collection.
+This is instead of being an array of object IDs or
+underscore IDs that need to then be traversed through
+initial queries in the application.
+You could just put the data right inside the collection.
+Now, that wouldn't be a good idea in the case of embedding
+teachers in the student collection.
+And the reason this there's a very good chance that you want
+to insert a teacher into the system before he has students.
+And you may want to insert a student into the system before
+he has teachers.
+And if you do embed like that, then you are requiring that
+the parent object exists in order to
+represent the child object.
+And that may not map to what the
+application wants to permit.
+
+
