@@ -481,3 +481,126 @@ the push, again within an update.
 And if you remember add to set, add something to an array
 list, if it's not there, push, push, is at
 the end of the list.
+
+
+---
+
+### m101 11 one to one
+
+https://youtu.be/cCsfon0vUlQ
+
+```
+# 1
+
+Employee
+{
+	_id : 20,
+	name : "Andrew"
+}
+
+Resume
+{
+	_id : 20,
+	jobs: [   ],
+	education : [   ]
+}
+
+
+```
+
+Reason to embeed o keep one-to-one
+* Frecuency of Access
+* Size of Items
+* Atomicity of documents
+
+Let's talk about 1 to 1 relations.
+1 to 1 relations are relations where each item corresponds to
+exactly one other item.
+So, for example, an employee has a resume.
+There is one employee has one resume.
+One resume has one employee.
+A building has a floor plan.
+A floor plan has a building.
+A patient has a medical history, and the medical
+history corresponds to the patient.
+Let's look at this first case, the employee-resume example.
+We can model this in several different ways
+to talk about that.
+All right.
+So we can model the employee-resume relation by
+having a collection of employees and a collection of
+resumes and having the employee point to the resume
+through linking, where we have an ID that corresponds to an
+ID in the resume collection.
+Or if we prefer, we can link in the other direction, where
+we have an employee key inside the resume collection, and it
+may point to the employee itself.
+Or if we want, we could embed.
+So, we could take this entire resume document, and we could
+embed it right here inside the employee document.
+Put it right there or vice versa.
+We can embed the employee information inside the resume
+document itself.
+So, we have all the different choices, and how you probably
+want to do it depends on how you access the data and how
+frequently you access each piece of the data.
+So, some of the considerations are as follows.
+The first one is frequency of access.
+Let's say, for example, that you constantly access the
+employee information and their biographical information and
+other information about the employee, but you very rarely
+access their resume.
+And let's say it's a very large collection, and you're
+concerned about locality and working set size.
+Well, you may decide to keep them in separate collections,
+because you don't want to pull a resume into memory every
+single time you pull the employee record-- employee
+document-- into memory.
+So, frequency of access has a lot of impact on how you'd
+arrange this in terms of whether you'd embed it or not.
+The second consideration is which of these are growing all
+the time or not growing, the size of the items.
+So, every time you add something to a document, there
+is a point beyond which the document will need to be moved
+in the collection.
+And if you knew this was true for some of the documents but
+not for other documents--
+for instance , if you were never going to update the
+employee record, but you were going to update the resume
+part of it--
+you might decide that you don't want to incur that
+overhead when you write to the employee record if you're only
+going to be updating the resume.
+So that might be another reason why you decide to keep
+them separate versus the same.
+And, of course, if the resume is so large--
+if it's actually larger than 16 megabytes, which is the
+size of a document--
+you might not be able to embed it.
+I mean, it's not likely that it would be larger than 16
+megabytes, but maybe it has some multimedia information or
+there's a lot of historical information about the person
+or event history, it could have that.
+And the final consideration is atomicity of data.
+Well, now there are no transactions in MongoDB, but
+there are atomic operations on individual documents.
+So, if you knew that you couldn't withstand any
+inconsistency and that you wanted to be able to update
+the entire employee plus the resume all the same time, you
+may decide to put them into the same document and embed
+them one way or the other so that you can
+update it all at once.
+All right.
+It's time for a quiz.
+What's a good reason you might want to keep two documents
+that are related to each other in a 1 to 1 relationship in
+separate collections?
+Check all that apply.
+Because you want to allow atomic update of both
+documents at once.
+To reduce the working set size of your application.
+To enforce foreign key constraints.
+Because the combined size of the documents would be larger
+than 16 megabytes.
+
+
