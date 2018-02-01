@@ -2636,3 +2636,62 @@ snorkeling category?
 And this is the snorkeling category right here.
 Which of these queries?
 
+
+---
+
+### m101 20 when to denormalize
+
+https://youtu.be/jDZ-HFoJ0vg
+
+#### When to Denormalize
+
+* 1 : 1       => Embed
+* 1 : many    => Embed (from the many to the one)
+* many : many => Link
+
+We started out this unit talking about the third normal
+form and denormalization.
+And if you recall, one of the reasons why you normalize data
+in the relational world is because you want to avoid
+modification anomalies that come with the
+duplication of data.
+And when you look at MongoDB and how it's structured,
+allowing these rich documents, it's easy to assume that what
+we're doing is we're denormalizing data.
+And to a certain extent, that's true.
+But as long as we don't duplicate data, we don't open
+ourselves up to modification anomalies.
+So looking back at what we went over in this unit, we
+talked about one-to-one relationships.
+And in that case, it's perfectly safe to embed the
+data if you'd like.
+And you don't open yourself up to these modification
+anomalies, because you're not duplicating the data.
+You're basically just taking something that would normally
+be in a separate table, and you're folding it
+into another table.
+And that doesn't necessarily duplicate any data.
+Now, when you have a one-to-many relationship, then
+embedding can also work well without duplication of data,
+as long as you embed from the many to the one.
+Now, if you want to go from the one to the many, then
+linking would avoid the duplication of data.
+Now, again, if you need to embed something, even if it
+causes duplication of data, for performance reasons, to
+match the access patterns of your application, then that
+could make sense, especially if the data is rarely changing
+or being updated.
+But you can avoid it often enough, even in this
+relationship, if you go from the many to the one.
+So in the many-to-many relation, which we looked at
+with students and teachers and authors and books, there, if
+you want to avoid the modification anomalies that
+come with denormalization, all you need to do is link through
+these arrays of object IDs in the documents.
+And if you need to, for performance reasons or for
+other reasons, matching some type of query you have to do
+for your application, then you can embed data.
+But do realize that you might be duplicating some data.
+And it's up to you as the application programmer to keep
+it all up to date.
+
