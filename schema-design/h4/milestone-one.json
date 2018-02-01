@@ -1,0 +1,18 @@
+{
+			"id" : 108,
+			"description" : "Facebook adds comments to Mini-Feed",
+			"stoned_year" : 2008,
+			"stoned_month" : 6,
+			"stoned_day" : 25,
+			"source_url" : "http://venturebeat.com/2008/06/25/facebook-adds-comment-to-the-mini-feed-its-like-friendfeed-is-looking-in-the-mirror/",
+			"source_text" : "",
+			"source_description" : "Facebook adds comments to the Mini-Feed. It's like FriendFeed is looking in the mirror",
+			"stoneable_type" : "Company",
+			"stoned_value" : null,
+			"stoned_value_type" : null,
+			"stoned_acquirer" : null,
+			"stoneable" : {
+				"name" : "Facebook",
+				"permalink" : "facebook"
+			}
+		}
