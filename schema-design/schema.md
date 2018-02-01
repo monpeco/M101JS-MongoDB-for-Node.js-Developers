@@ -840,6 +840,24 @@ application wants to permit.
 
 https://youtu.be/KtIY4Q1tUao
 
+```
+db.students.find();
+{"_id" : 0, "name" : "Andrew", "teachers" : [ 0, 1 ]}
+{"_id" : 1, "name" : "Richard", "teachers" : [ 0, 1, 3]}
+{"_id" : 2, "name" : "Eliot", "teachers" : [ 1, 2, 3]}
+{"_id" : 3, "name" : "Mark", "teachers" : [ 0, 3]}
+
+db.teachers.find();
+{"_id" : 0, "name" : "Mark Horowitz" }
+{"_id" : 1, "name" : "John Hennessy" }
+{"_id" : 2, "name" : "Bruce Wolley" }
+{"_id" : 3, "name" : "James Plummer" }
+
+
+db.students.ensureIndex({'teachers':1});
+
+db.students.find({'teachers' : {$all:[0,1]}})
+```
 One of the reasons that linking and embedding works
 so well within MongoDB is because of the existence
 of a feature called multikey indexes.
