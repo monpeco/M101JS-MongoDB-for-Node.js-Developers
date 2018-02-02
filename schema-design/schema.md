@@ -956,3 +956,58 @@ teachers underscore 1 index, which is a multikey index.
 And that's how multikey indexes work
 and why they make linking and embedding an efficient way
 to represent information within MongoDB when you query it.
+
+
+---
+
+### m101 17 benefits of embedding
+
+https://youtu.be/XIN0Dqht08Q
+
+The main benefit of embedding data from two different
+collections and bringing it together into one collection
+is performance.
+And the main performance benefit comes from improved
+read performance.
+Now, why do we get improved read performance?
+The reason is the nature of the way these systems are
+built, the computer systems are built, which is they often
+have spinning disks, and those spinning disks have a very
+high latency, which means they take a long time to get to the
+first byte.
+They often take over one millisecond to get to the
+first byte.
+But then, once they get to the first byte, each additional
+byte comes pretty quickly.
+So they tend to be pretty high bandwidth.
+So the idea is that, if you can co-locate the data that
+you're going to use together in the same document, embed
+it, then you're going to spin the disk, find the sector
+where you need this information, and then you're
+going to start reading it.
+And you're going to get all the information
+you need in one go.
+And it also means, if you have two pieces of data that would
+normally be in two collections or in several relational
+tables, but instead they're in one document, that you avoid
+round trips to the database.
+Because now, in one round trip, you can go in, you can
+read the data, and you can get back out.
+Same thing with a write.
+In one trip, you can go to the database, you can write the
+data you need, which would normally potentially go into
+multiple different parts of the system and parts of disk,
+write one location on the disk, and then get back out.
+And the only real caveat on this is, as I said earlier, if
+a document winds up getting moved a lot more often because
+you've brought the data together because the document
+needs to be expanded, then you could create a problem.
+You could slow down your writes
+because of the embedding.
+So again, it all comes down to your access patterns with
+MongoDB and trying to design a schema around the access
+patterns that you see in your actual application.
+
+
+
+
