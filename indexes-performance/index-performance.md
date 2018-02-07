@@ -539,3 +539,444 @@ In place update of documents, power of two document padding,
 document level concurrency, compression, and turbocharged.
 Which of these are true?
 
+
+---
+
+### Indexes
+
+https://youtu.be/U3iWPF5jP-g
+
+
+okay let's talk about indexes now and
+their impact on database performance now
+this is an imagined collection right
+here of a bunch of documents and the
+documents might have the form shown
+right here this is a collection and
+these documents might be on disk in
+essentially arbitrary order and whether
+you're talking about an Map v1 or Wired
+Tiger there might be no particular order
+to the documents on disk now if there's
+no index and you wanted to find all the
+documents where let's say name was Zoe
+you would need to scan every document in
+the collection and there could be
+millions of those and this collection
+scan or a table scan as it's called in a
+relational world is just death to
+performance it's probably the single
+greatest factor on whether or not your
+queries are going to perform well more
+important than the speed of the CPU more
+important than how much memory you have
+is whether or not you can use some sort
+of index to avoid having to look at the
+entire collection so how does the index
+work what what is an index well an index
+is an ordered set of things so imagine
+that we just had a simple index on let's
+say the name and so if we had a simple
+index in the name you can think of it as
+an ordered list of things for instance
+Andrew might be on the left because it's
+alphabetically early and Zoe might be on
+the right in the middle might be Barry
+and Charlie etc and each of these index
+points has a pointer to a physical
+record so it's going to have some sort
+of pointer to a location on a disk or
+maybe the underscore ID for the document
+you can find the records so Barry record
+might be right here charlie record might
+be right there Zoe record might be right
+there the nice thing about having
+something that's ordered is it's very
+fast to search it because if it was
+actually a linear list like this and
+it's it's not in a typical database but
+if it was linear like this then you
+could search it using a binary search
+and it would take you log two of the
+number of items in this list in real
+databases and in MongoDB the actual way
+that this index is structured is called
+a b-tree and looking at what a b-tree is
+is look beyond the scope of this course
+but if you just go on Google and search
+for beech tree you'll get to a great
+Wikipedia page that explains it pretty
+well so you're going to want to put
+these indexes on the item
+that you believe you're gonna be
+querying on because that's gonna make
+querying much faster but sometimes we
+don't just want to query on let's say
+name we also want to query on name and
+maybe hair color so how would that work
+well an index on name in the hair color
+would be represented as follows you'd
+write name comma hair color and that's
+ordered and if you did that then all of
+the index entries would be ordered by
+name comma hair color so for instance
+there might be an index entry for Andrew
+comma blonde and that's gonna be a
+single index entry which I'll represent
+by making it green like this and then
+there might be another index entry for
+Andrew comma red and again that's just
+one index entry right here so we have
+another index entry here and Andrew
+blonde might refer to this document here
+Andrew red might refer to this document
+here and then you might have one for
+Barry brown hair and then that's going
+to be right here and maybe that points
+over here and then another one for Barry
+red which might be a document that is
+over there and then in the far corner
+here let's say have another index entry
+for Zoey and then let's say red and
+maybe that document is somewhere over
+there these documents which I'll show
+you where they are they're in the order
+of name comma hair color so you can kind
+of see that if you wanted to find let's
+say all the berries with a certain color
+hair you could do it pretty easily
+because you could again do a binary
+search of the structure and then do it
+again through this part of the structure
+define let's say Barry with red hair you
+could also do range queries so you could
+say find me all the berries with hair
+that's greater than or equal to brown
+and less than or equal to red that would
+also work but if on the other hand you
+specified just the hair color you'd kind
+of be stuck right because if I said just
+find me all the people with hair color
+red
+there's sort of all over the place right
+and they're not ordered in any
+particular way in this larger structure
+so I can't use a binary search to find
+them so as a result whenever I'm using
+an index I need to use a leftmost set of
+things so if the index were let's say
+extended and included the date of birth
+then I could search on just the name
+that would work in this index so then I
+could just do a nice little search or I
+could search on the name in the hair
+color or I could search the name in the
+hair color in the date of birth but I
+can't come in with just the date of
+birth or just the hair color because
+then I have no way of searching this
+this index so let me review what I just
+said if you have an index and indexes
+are going to be described this way when
+we talk about them of a B and C then you
+can search on a you can search on a B
+you can search on ABC C alone no C comma
+B no and if you searched on let's say a
+comma C then it's sort of a partial yes
+because it would use the index for the a
+portion and have to search to all of
+them in the C portion the other point I
+want to make is that indexing is not
+free because whenever you change
+something in a document which affects
+the index you're gonna have to update
+that index you're gonna have to write it
+on memory and eventually on disk now the
+indexes aren't represented the way I did
+linearly they were represented as B
+trees but maintain these B trees takes
+time so as a result if you have a
+collection and you have indexes on that
+collection and the writes affect items
+that were indexed the writes will be
+slower than if there was no index that's
+right indexing actually slows down your
+rights but your reads will be much
+faster now if you were just writing and
+you never wanted to ever ever find a
+document you might not want to have an
+index because then you can insert the
+document it would be inserted anywhere
+on the disk
+it doesn't wouldn't matter where and
+there'll be no index to maintain and in
+fact one of the strategies when
+inserting a very large amount of data
+inside a database is to have no indexes
+on the actual collection at all to
+insert all the data and then after all
+the data is inserted then add the
+indexes and then build the indexes that
+way you don't have to incur maintain the
+indexes while you add data
+mentally and the fact that rights are
+slower and the fact that it takes time
+to update an index on every single write
+that affects anything in index is one of
+the reasons why you don't just want to
+have an index on every single key in a
+collection because we had an index and
+every single key in the collection then
+you're going to slow down your writes
+more and you're going to use a lot more
+disk space to to maintain those indexes
+and this want to point out that if you
+had 10 million items in a collection and
+there's no index and you search on
+something anything you know look at 10
+million documents and that's pretty
+expensive and if you have to look at 10
+million documents or 100 million
+documents and the amount of memory you
+have is much smaller than the amount of
+disk or space that the documents
+represent on disk then you're going to
+wind up swapping all those documents to
+memory and creating a tremendous amount
+of disk i/o which is going to be pretty
+slow and this is what indexing is so
+absolutely critical to performance all
+right now it is time for quiz which
+optimization will typically have the
+greatest impact on the performance of a
+database you can see there are four
+choices here adding memory so that the
+working set fits in memory adding a
+faster drives that the operations that
+hit the disk will happen more quickly
+replacing your CPU with the faster one
+say twice as fast or adding appropriate
+indexes on large collections that's only
+a small percentage of the queries need
+to scan the collection check the right
+answer
+
+
+---
+
+### Indexes
+
+okay let's talk about indexes now and
+their impact on database performance now
+this is an imagined collection right
+here of a bunch of documents and the
+documents might have the form shown
+right here this is a collection and
+these documents might be on disk in
+essentially arbitrary order and whether
+you're talking about an Map v1 or Wired
+Tiger there might be no particular order
+to the documents on disk now if there's
+no index and you wanted to find all the
+documents where let's say name was Zoe
+you would need to scan every document in
+the collection and there could be
+millions of those and this collection
+scan or a table scan as it's called in a
+relational world is just death to
+performance it's probably the single
+greatest factor on whether or not your
+queries are going to perform well more
+important than the speed of the CPU more
+important than how much memory you have
+is whether or not you can use some sort
+of index to avoid having to look at the
+entire collection so how does the index
+work what what is an index well an index
+is an ordered set of things so imagine
+that we just had a simple index on let's
+say the name and so if we had a simple
+index in the name you can think of it as
+an ordered list of things for instance
+Andrew might be on the left because it's
+alphabetically early and Zoe might be on
+the right in the middle might be Barry
+and Charlie etc and each of these index
+points has a pointer to a physical
+record so it's going to have some sort
+of pointer to a location on a disk or
+maybe the underscore ID for the document
+you can find the records so Barry record
+might be right here charlie record might
+be right there Zoe record might be right
+there the nice thing about having
+something that's ordered is it's very
+fast to search it because if it was
+actually a linear list like this and
+it's it's not in a typical database but
+if it was linear like this then you
+could search it using a binary search
+and it would take you log two of the
+number of items in this list in real
+databases and in MongoDB the actual way
+that this index is structured is called
+a b-tree and looking at what a b-tree is
+is look beyond the scope of this course
+but if you just go on Google and search
+for beech tree you'll get to a great
+Wikipedia page that explains it pretty
+well so you're going to want to put
+these indexes on the item
+that you believe you're gonna be
+querying on because that's gonna make
+querying much faster but sometimes we
+don't just want to query on let's say
+name we also want to query on name and
+maybe hair color so how would that work
+well an index on name in the hair color
+would be represented as follows you'd
+write name comma hair color and that's
+ordered and if you did that then all of
+the index entries would be ordered by
+name comma hair color so for instance
+there might be an index entry for Andrew
+comma blonde and that's gonna be a
+single index entry which I'll represent
+by making it green like this and then
+there might be another index entry for
+Andrew comma red and again that's just
+one index entry right here so we have
+another index entry here and Andrew
+blonde might refer to this document here
+Andrew red might refer to this document
+here and then you might have one for
+Barry brown hair and then that's going
+to be right here and maybe that points
+over here and then another one for Barry
+red which might be a document that is
+over there and then in the far corner
+here let's say have another index entry
+for Zoey and then let's say red and
+maybe that document is somewhere over
+there these documents which I'll show
+you where they are they're in the order
+of name comma hair color so you can kind
+of see that if you wanted to find let's
+say all the berries with a certain color
+hair you could do it pretty easily
+because you could again do a binary
+search of the structure and then do it
+again through this part of the structure
+define let's say Barry with red hair you
+could also do range queries so you could
+say find me all the berries with hair
+that's greater than or equal to brown
+and less than or equal to red that would
+also work but if on the other hand you
+specified just the hair color you'd kind
+of be stuck right because if I said just
+find me all the people with hair color
+red
+there's sort of all over the place right
+and they're not ordered in any
+particular way in this larger structure
+so I can't use a binary search to find
+them so as a result whenever I'm using
+an index I need to use a leftmost set of
+things so if the index were let's say
+extended and included the date of birth
+then I could search on just the name
+that would work in this index so then I
+could just do a nice little search or I
+could search on the name in the hair
+color or I could search the name in the
+hair color in the date of birth but I
+can't come in with just the date of
+birth or just the hair color because
+then I have no way of searching this
+this index so let me review what I just
+said if you have an index and indexes
+are going to be described this way when
+we talk about them of a B and C then you
+can search on a you can search on a B
+you can search on ABC C alone no C comma
+B no and if you searched on let's say a
+comma C then it's sort of a partial yes
+because it would use the index for the a
+portion and have to search to all of
+them in the C portion the other point I
+want to make is that indexing is not
+free because whenever you change
+something in a document which affects
+the index you're gonna have to update
+that index you're gonna have to write it
+on memory and eventually on disk now the
+indexes aren't represented the way I did
+linearly they were represented as B
+trees but maintain these B trees takes
+time so as a result if you have a
+collection and you have indexes on that
+collection and the writes affect items
+that were indexed the writes will be
+slower than if there was no index that's
+right indexing actually slows down your
+rights but your reads will be much
+faster now if you were just writing and
+you never wanted to ever ever find a
+document you might not want to have an
+index because then you can insert the
+document it would be inserted anywhere
+on the disk
+it doesn't wouldn't matter where and
+there'll be no index to maintain and in
+fact one of the strategies when
+inserting a very large amount of data
+inside a database is to have no indexes
+on the actual collection at all to
+insert all the data and then after all
+the data is inserted then add the
+indexes and then build the indexes that
+way you don't have to incur maintain the
+indexes while you add data
+mentally and the fact that rights are
+slower and the fact that it takes time
+to update an index on every single write
+that affects anything in index is one of
+the reasons why you don't just want to
+have an index on every single key in a
+collection because we had an index and
+every single key in the collection then
+you're going to slow down your writes
+more and you're going to use a lot more
+disk space to to maintain those indexes
+and this want to point out that if you
+had 10 million items in a collection and
+there's no index and you search on
+something anything you know look at 10
+million documents and that's pretty
+expensive and if you have to look at 10
+million documents or 100 million
+documents and the amount of memory you
+have is much smaller than the amount of
+disk or space that the documents
+represent on disk then you're going to
+wind up swapping all those documents to
+memory and creating a tremendous amount
+of disk i/o which is going to be pretty
+slow and this is what indexing is so
+absolutely critical to performance all
+right now it is time for quiz which
+optimization will typically have the
+greatest impact on the performance of a
+database you can see there are four
+choices here adding memory so that the
+working set fits in memory adding a
+faster drives that the operations that
+hit the disk will happen more quickly
+replacing your CPU with the faster one
+say twice as fast or adding appropriate
+indexes on large collections that's only
+a small percentage of the queries need
+to scan the collection check the right
+answer
+
