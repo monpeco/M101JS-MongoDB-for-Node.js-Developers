@@ -418,3 +418,124 @@ It has collection level locking.
 The operating system handles this.
 
 ---
+
+### Introduction to WiredTiger
+
+https://youtu.be/aNsugW7r3mM
+
+
+1. Document level concurrency (one write at the time)
+2. Compresssion (of data and indexes)
+3. No In-place update (append only)
+4. `db.foo.stats()`
+
+All right.
+Now you know about the MMAP storage engine.
+Let's talk about the Wired Tiger storage engine.
+This storage is not turned on by default inside MongoDB in 3.0
+but it offers some interesting features,
+and for a lot of workloads, it is faster.
+The first is that it offers document level concurrency.
+Now, we don't call it document level locking because it's
+actually a lock free implementation which
+has an optimistic concurrency model where the storage
+engine assumes that two writes are not going
+to be to the same document, and if they are
+to the same document, then one of those writes
+is unwound and has to try again, and it's
+invisible to the actual application.
+But we do get this document level concurrency
+versus collection level concurrency in the MMAP storage
+engine, and that's a huge win.
+The second is that this storage engine offers compression,
+both of the documents themselves, of the data,
+and of the indexes.
+And it's beyond the scope of this course
+to go over exactly how all this works, but just very broadly,
+the Wired Tiger storage engine.
+We talked before about having a 100 gigabyte file,
+and if you had a 100 gigabyte file on disk using Wired Tiger,
+Wired Tiger itself manages the memory that
+is used to access that file.
+So the file is brought in in pages,
+and the pages can be of varying sizes,
+and Wired Tiger decides which blocks
+it's going to keep in memory and which
+blocks to send back to disk.
+So it's because Wired Tiger is managing its own storage
+that Wired Tiger can, for instance, compress.
+You don't want to keep it compressed in memory
+because when you have read access to a document,
+if they hit memory and they hit your cache of data
+that's in memory, you don't want to have to decompress it.
+And with Wired Tiger, you don't have to
+because it's kept in the clear in memory,
+but before they write out the disk, they can compress it,
+and that saves a tremendous amount of space
+for certain types of data.
+And if you think about MongoDB, the keys
+are often repeated in every single document,
+so there's a lot of opportunities for compression.
+Wired Tiger is also an append only storage engine.
+There are no in place updates.
+That means that if you update a document in Wired Tiger, what
+they're going to do is they're going
+to mark that the document is no longer used
+and they're going to allocate new space somewhere
+else on disk and they're going to write it there.
+And eventually, they reclaim the space that is no longer used.
+This can result in writing a lot of data sometimes.
+If you have very large documents and you only update one item,
+Wired Tiger is going to have to write that entire document
+again, but it's this append only nature
+of the way they store the data that
+allows it to run without locks at the document level
+and gives them the document level concurrency.
+So overall, it's often faster.
+If you want to start the database with the Wired Tiger
+storage engine, you can do it using
+the flag -storageEngine and then after that, wired tiger.
+My handwriting's kind of poor, so I'm
+going to show you on the screen what this looks like.
+So the first thing you want to do
+is kill your existing mongod process,
+and then you can create a new directory, for instance, called
+WT for Wired Tiger, and then you could start Mongo
+by telling it to use that directory, dbpath Wired Tiger.
+That tells it to use this Wired Tiger directory.
+I'll do .WT, although I don't think I need that.
+Actually, I don't think I need that.
+dbpath WT, put the files in that directory,
+and then I would need to give it the storageEngine flag
+and then say Wired Tiger.
+So mongod -dbpath.
+Normally, it defaults into /data/db if you don't give it
+any arguments, but we need a new directory because the Wired
+Tiger storage engine cannot open the files created by MMAP V1.
+So if you have been running MongoDB on your computer,
+on your desktop, for example, and you kill it,
+and you try to start up using storage engine Wired Tiger,
+it won't work because it can't read those files.
+So if we hit Return, you can see that Wired Tiger is starting
+and it's listening on 27017, and that if we just
+clear the screen and connect using Mongo,
+then we can do db.foo.insert name andrew.
+And now we've written something into a Wired Tiger based
+storage engine inside MongoDB.
+And if I want to know that it is a Wired Tiger based storage
+engine, I'm in the test database right
+now and the foo collection.
+If you call db.foo.stats, you can
+see it tells you a bunch of things about the stats,
+about this collection, including its size, which is small,
+and that it has this Wired Tiger key that tells you that it's
+a Wired Tiger collection.
+So that's it.
+Now it's time for a quiz.
+Which of the following are features of the Wired Tiger
+storage engine?
+Check all that apply.
+In place update of documents, power of two document padding,
+document level concurrency, compression, and turbocharged.
+Which of these are true?
+
