@@ -1140,3 +1140,57 @@ student underscore name and neither of
 these will be in the - one direction
 type your answer right here
 
+---
+
+### Discovering and Deleting Indexes
+
+https://youtu.be/dX49IcmTrGA
+
+okay now we know how to create indexes
+on a collection how would you discover
+what indexes are already on the
+collection well we can do that with the
+get indexes command so I'm going to
+start the Mongo shell again and once
+again I'm going to use the school
+database and then i'm going to call DB
+students that get indexes students is
+the name of the collection and as you
+remember in the last lesson we just
+added an index to it for student ID
+we're going to call get indexes and if
+we do that we get back this result which
+is a document actually it's an array of
+two documents and the first one tells
+you that there is an index on underscore
+ID now this index exists in all
+collections and you can't delete it
+there's also an index on student
+underscore ID and that's the index we
+just created and if we wanted to get rid
+of that index we would call DB dot
+students dot drop index and provide this
+exact same signature as when we created
+it so here we're calling drop index and
+we're giving the same signature student
+underscore ID colon one that we gave
+when we created the index and if we do
+that we should be able to drop it and
+there you go numb indexes was two and
+now it's one and if we get indexes again
+we'll see that in fact there is only one
+index perfect all right one last point I
+want to make is that this call get
+indexes is a call that you use in
+MongoDB 30 and we'll work on both wired
+tiger & M map v1 and in earlier versions
+of a database you could look at a
+special collection system that indexes
+to see what indexes existed that does
+not work in wire tiger and so the
+preferred way to figure out what indexes
+are on a collection is to do this the
+call DB dot students that it get indexes
+and again is a change in MongoDB 30
+
+
