@@ -1194,3 +1194,172 @@ call DB dot students that it get indexes
 and again is a change in MongoDB 30
 
 
+--
+
+### Multikey Indexes
+
+https://youtu.be/_NGwn_X82Dw
+
+let's talk about creating indexes on
+arrays we call these indexes multi key
+indexes so imagine you have a collection
+of documents that look similar to this
+this document has named Andrew tags
+photography hiking and golf some of my
+passions color red I don't know why I
+just picked it and then location is also
+an array New York comma California you
+can create an index on tax and if you do
+that then when MongoDB indexes the
+collection and if this document were
+already in there then it would create an
+index point for photography hiking and
+golf you could also create an index on
+if you wanted tags comma color and in
+that case MongoDB would create for
+instance for this document index points
+for photography red hiking red and golf
+read now multi key indexes become multi
+key indexes when the database realizes
+that there is a document with an array
+as one of the keys of the index and
+there are restrictions on the use of
+multi key indexes in particular you
+can't have two items of a compound index
+this is a compound index where both of
+them are arrays so for instance this
+index would not be legal tags comma
+location if there was already a document
+in the collection we're both tags and
+location were arrays and when mom would
+be would tell you as it can't index
+parallel arrays and the reason is
+there's an explosion of index points
+that created because it has to create
+index point for the Cartesian product of
+the items in the arrays and it doesn't
+permit that and the other thing to
+remember is that when you first create
+an index if there's let's say nothing in
+the collection mom gonna be doesn't know
+that there may be an array at for
+instance in tags in the future and so an
+index only becomes multi key when the
+first document gets added and it has as
+its value for one of the keys an array
+so that sounds kind of complicated let's
+go through it concretely and look inside
+the shell to get a better understanding
+of how this works all right so let's
+start the Mongo shell we have a food
+collection which is empty we're gonna
+create a simple document where a is 1
+and B is 2
+okay and if we do that it gets inserted
+and you can see it's in there no problem
+now if we wanted to create an index on a
+comma B we could do that by typing DB
+dot foo dot create index a ascending B
+ascending there was one of the Knicks
+now there are two and if we use our
+friend the explain command that we're
+getting to know better and better the
+food collection call explained and then
+do a find where let's say a is one
+perfectly reasonable query a is 1 and B
+is 1 we'll say we can look here and we
+can see that in the query planner stage
+of this explain output it tells us about
+the winning plan and the winning plan
+was to use an index scan on the index a
+underscore one B underscore one and
+that's the name for the a comma B index
+if we do get indexes we'd see that and
+it tells us that it is not a multi key
+index okay fair enough well that makes
+sense I mean there's not much in this
+thing we saw that all there is is the
+single document and it doesn't have an
+array as either part but now let's
+insert something else into here let's
+insert a document where a is 3 and B is
+an array 3 comma 5 comma 7 now if we did
+that now at this point if we run the
+exact same query we ran before and we do
+a find of a comma 1 become a 1 and we
+run it through the explain command then
+what output will we get let's see
+well once again it tells us that's using
+this index a comma B a underscore 1 B
+underscore 1 index but this time it says
+multi key true and if we of course
+issued this command without the explain
+it would find exactly no documents
+because there are no documents that
+satisfy this criteria now let's see what
+was in the collection so we can get a
+better query we have a comma 3 and B
+comma 5 let's look for documents that
+have a comma 3 and become a 5 that'll be
+in there a comma 3 become a 5 now if we
+did that then we get the 1 document
+right there and again if we look at it
+with explain we'll see that that query
+also for
+says the same result telling us that
+it's using the multi key index the index
+has been great it's a multi key and
+again if you do get indexes on this
+collection you'll see that the index is
+called a underscore 1b underscore one
+which is what we saw inside the explain
+output but let's say we did something
+else let's say that we actually now
+inserted something in this collection
+where both a and B were is like for
+instance three four five and B is seven
+eight nine if we insert something into
+the collection where both a and B are
+arrays it's not gonna work it's gonna
+say I'm sorry I can't put anything into
+this index where both a and B are both
+arrays all right so this makes sense I
+mean we have this collection and we can
+see what's in it we can see that we have
+two different documents and then the
+second one B is a list or an array and a
+is not well what if we wanted to insert
+something where a was a list and B was a
+scalar would that be okay and the answer
+is yes because this is not a multi key
+index in a way that says Oh B always has
+to be an array it's it's a multi key
+index and allows any combination so for
+instance a can be an array and B can be
+a scalar or B can be an array and they
+can be a scalar and they're both legal
+it's just that you can't have any one
+document where both a and B in this
+compound index are both arrays I hope
+that's clear and the other thing is that
+once index has been upgraded to multi
+key even if you dropped all the
+documents out of this collection it
+would still say it was multi key we
+didn't explain on the collection so the
+key takeaways here is that you can add
+indexes on arrays and you can create
+compound indexes that include arrays but
+when you have an index that is multi key
+and where at least one document has a
+value of being an array you can't have
+multiple values of a compound index both
+be an array that's not legal all right
+it's time for a quiz multi key indexes
+suppose we have a collection foo that
+has an index created as follows foo
+created an x a1 b1 this should seem very
+familiar to you if you watched a lesson
+which of these following inserts are
+valid
+this collection check all that apply
