@@ -980,3 +980,163 @@ a small percentage of the queries need
 to scan the collection check the right
 answer
 
+
+---
+
+### Creating Indexes
+
+https://youtu.be/xi2gtzZez6Q
+
+    db.students.createIndex({class:1 , student_name:1})
+    db.students.explain().find({student_id:5})
+    db.students.explain(true).find({student_id:5})
+
+now I'd like to show you a large
+collection and the impact that indexes
+can have on performance so I've loaded
+up ten million documents into a
+collection and I'm going to show you
+that in the Mongo shell it's in the
+school database in the students
+collection and I'm going to look at a
+single document in the collection which
+is a great way to get an understanding
+of what the data looks like assuming its
+regular and it is in this case so you
+can see each document has a student ID
+and a bunch of scores for the student
+these are for assessments an exam a quiz
+a homework and a homework this is the
+grades they got in this particular class
+and so there are ten million documents
+so there's 1 million students that have
+each taken ten classes now there's
+absolutely no indexes on this collection
+so let's see how long it would take to
+do a query on this collection and try to
+find all the information for student ID
+let's say five which would be very early
+in the collection because we just
+inserted it it was probably inserted in
+order on the disk and I'm running the EM
+map b1 storage engine in this case all
+right let's do that
+all right that took a few seconds to
+return those ten documents and this is a
+fast computer this is a four gigahertz
+core i7 computer with 32 gigabytes of
+memory and a fusion drive that has a
+combination of SSD and spinning discs on
+it so that's a long time that's a lot of
+cycles for a computer this fast so the
+question is how can we make it faster
+but before I do that I want to show you
+a couple things first is that there is
+an explain command that we're going to
+go over in a later lesson that will show
+you the secrets of what the database is
+doing when it executes a query and I
+want to give you a little foreshadowing
+of this command it runs on top of a
+collection so DB dot students students
+is the collection explain is the command
+and then you chain what you want to do
+in this case you want to do a find you
+can also change update or delete and
+it's going to tell you what indexes it
+would have used to satisfy this query
+now in this case there aren't any
+indexes it can use and it's going to
+scan all 10 million documents and it
+should tell us that so if we look
+through the output of explain and we'll
+go through it in more detail in a later
+lesson the interesting part is right
+here
+in the winning plans section where you
+can see it says it's doing a collection
+scan it's looking at all the documents
+and that's that's gonna be pretty slow
+now if we actually did a find one versus
+a find then it'll be faster and the
+reason it'll be faster is that once it
+finds a single document it can quit
+looking and so since the documents are
+probably in student ID order
+approximately right now that's gonna be
+fairly fast and you can see that was
+fast didn't take very long for it to
+return a single document for the student
+95 but we want a general fine to work
+well so we want to add an index so how
+do we do that let's add the index DB
+students dot create index and you'll
+notice it's camelcase inside the shell
+lower case c upper case eye and now
+we're going to present the document to
+create index that describes the index
+and in this case we're saying we want it
+to be indexed on student ID ascending
+we'll talk a little bit more about what
+that means later but we're gonna hit
+return this is gonna take a while so I'm
+gonna time this off camera so that I can
+tell you how long it took on this
+superfast computer here we go okay
+it took about 23 seconds on this
+computer to create this index and that's
+important to note because even on a
+really fast computer creating index
+takes a while because we have to scan
+the entire collection create new data
+structures and write them all to disk
+all right now that we have an index this
+search on finding all the students with
+student ID 5 should be nice and fast
+let's see if it is woof
+nice and fast and it was and if we run
+the explain command we're gonna see that
+it's now using an index so let's see
+that all right so I ran the explain
+command once again and you can see now
+it says the winning plan for this type
+of query is to use the index name
+student underscore ID 1 and that's
+fantastic and one little other secret
+I'll tell you about explain is that if
+we give it true and there's two ways to
+give arguments to explain this is
+actually the older one then it'll
+actually run the query as well which
+means it can tell us how many documents
+it actually looked at in the execution
+stage of the query
+and you can see that number of documents
+examined was exactly ten isn't that
+pretty cool so once it used the index it
+only had to actually look at ten
+documents Wow that's fantastic
+all right now we could also add a
+compound index to this collection and if
+we wanted to add a compound index we
+would do it as such we would give a
+second key and then ascending or
+descending so for instance this is the
+command you'd give to create an index on
+student ID comma class ID where the
+student ID part was ascending and the
+class ID part was descending and this
+won't affect the queries we just did but
+it will affect things like sorting where
+if the indexes aren't in the right order
+and depending on how you specify the
+sort you may not be able to use the
+index okay
+so now it is time for a quiz please
+provide the Mongo show command to add an
+index to a collection name students
+having the index key be class comma
+student underscore name and neither of
+these will be in the - one direction
+type your answer right here
+
