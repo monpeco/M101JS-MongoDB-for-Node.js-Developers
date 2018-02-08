@@ -2007,3 +2007,163 @@ index can be used to store it much more
 quickly in all cases please check the
 answer
 
+
+---
+
+### Background Indexes
+
+https://youtu.be/AchmKNj2qhw
+
+**Lecture Notes**
+At 1:19, Andrew says he thinks the index creation queues up on a per-database level; with MongoDB 2.4 
+and later, you can create multiple background indexes in parallel even on the same database.
+
+Beginning in MongoDB 2.6, creating an index in the background on the primary will cause the indexes to 
+be created in the background on secondaries, as well. The secondaries will begin index creation when 
+the primary completes building its index.
+
+You can read up on background index creation [here](https://docs.mongodb.com/manual/core/index-creation/#index-creation-background).
+
+alright now we know how to create
+indexes and how to create unique indexes
+and sparse indexes but the last concept
+I want to discuss with you is whether or
+not you create this index in the
+foreground or the background so let's go
+through the different options foreground
+and background now foreground index
+creation is the default in MongoDB and
+the good thing about foreground index
+creation is that it is relatively a
+necessary relatively because it still
+can be slow it is relatively fast and it
+blocks all writers and readers in the
+database that has the collection so a
+foreground index creation is going to
+block the writers and the readers in the
+same database as the collection exists
+even though we have / collection
+database locking in MF v one storage
+engine and in wire tiger there is
+concurrency the document level even
+though that's true if you do an index
+creation in the foreground which is the
+default you're going to block readers
+and writers to the database other
+databases you can still get to so you
+have to do this probably not in the
+production system so you got to be very
+careful if you're going to do that and
+the other option is you can do a
+background index creation now background
+ex creations are a bit slower relative
+to the foreground index creation but
+they don't block readers and writers you
+can only have one background index
+equation going on at a time after that
+the next one will queue and wait I think
+that is on a per database level and this
+is probably a better way to create an
+index however it's still fairly high
+load the other way to create an index
+very efficiently in a production system
+is something we haven't talked about yet
+but we'll get to a little bit in this
+course toward the end which is to create
+the index on a different server than the
+one that you're using to serve most of
+the queries so if you have a mom going
+to be replica set and this is a concept
+we're going to get to later on which is
+a group of servers working together in
+tandem then what you can do is you can
+take one of them out of the set
+temporarily only sending requests to
+let's say this one and then run the
+index creation in the foreground here
+which could be much faster and then
+after the index creation is finished
+then you could bring them back in the
+set and you can rotate around which
+server takes most of the requests and in
+doing this you can create an index in
+the foreground on a server without
+creating any form
+penalty from the application standpoint
+that's talking to this cluster of
+database servers alright so again for
+indexing is the default background
+indexing is something you have to ask
+for now let's go through and just try
+this and play with it so we can see it
+in action now right here I've got my
+students collection again which had 10
+million records remember from the
+previous lessons and it has two indexes
+on it and I've dropped the index on
+scores score and if you recall it was a
+very expensive index to create each of
+these documents has an array of scores
+and it just took a 20 minutes last time
+so I'm going to run this in the
+foreground and it's not going to
+complete any time soon and then while I
+do that I'm going to also take another
+manga shell and use the school database
+and then do DB students not find one and
+you can see that I am in fact completely
+blocked I'm getting nothing from the
+database blocked it's too bad not block
+from other databases so there I killed
+it killed that request if I'm in a test
+database and I do d b dot employees dot
+find which i think is a collection that
+should still be there then you can see i
+can access that just fine it's in a
+different database ok so lets go back
+and run this in the background now and
+then see if that works better so i'm
+going to kill this index creation in the
+foreground i hit control C in the shell
+offered to kill the OP I said yes seems
+to have killed the shell as well which
+is fine and then I'm going to run Mongo
+i'm going to use school again and now
+i'm going to create this index in the
+background so let's confirm it there is
+no index first of all alright so there's
+no index on scores dots score so that's
+good so let's create one DB dot students
+dot create index and put it on scores
+dot score ascending and then give the
+option for background true so I'm going
+to say true to that and let's see I'm
+going to check it looks ok hit return
+and now it's going to go off and do this
+in the background pretty darn slow I'm
+still not going to get an immediate
+response from the shell it's not going
+to background the actual operation the
+shell standpoint but now now that I've
+done that I'm going to use school again
+and then do d b dot students that find
+one
+and you can see that I successfully
+queried this collection even while index
+creation is going on in the background
+and so that's how background indexes
+work alright time for a quiz which of
+the following are true about creating an
+index in the background in MongoDB check
+all that apply and here are the choices
+MongoDB instance can only build one back
+when the next at a time for database
+although the database server will
+continue to take requests a backward and
+expiration still blocks the Mongo shell
+creating indexed in the background takes
+longer than the foreground and in Mongo
+22 and above index are created in the
+background by default all right and
+please check your answer
+
