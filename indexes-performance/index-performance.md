@@ -1729,3 +1729,119 @@ db.people.createIndex({'work_history.company':-1})
 ```
 
 ---
+
+### Index Creation Options, Unique
+
+https://youtu.be/D-Ra5TEaaL4
+
+**Insert data**
+```
+db.stuff.insert({'thing':'apple'});
+db.stuff.insert({'thing':'pear'});
+db.stuff.insert({'thing':'apple'});
+```
+
+**Create index**
+    db.stufff.createIndex({thing:1});
+
+**Create unique index**
+    db.stufff.createIndex({thing:1}, {unique:true});
+
+**Remove one element**
+    db.stuff.remove({thing:'apple'}, {justOne: true})
+
+**Check index**
+    db.stuff.getIndexes();
+    ... "unique": true
+
+
+okay let's talk about unique indexes so
+far all the indexes that we've created
+have been non unique but you can also
+create unique indexes that enforce the
+constraint that the keys have to be
+unique within the collection that no two
+documents can have the same key if it's
+indexed let's go into the Mongo shell
+and demonstrate what we're talking about
+we're gonna create a new collection
+called stuff just to make sure that it's
+really gone I'm gonna drop it now I'm
+gonna insert some stuff into my stuff
+collection alright I have inserted an
+apple into the collection now I'm going
+to insert a pair into the collection and
+now I'm gonna insert another Apple into
+the collection and now I'm gonna see
+what's in the collection and we see two
+apples and a pear now if we wanted to
+create an index on this we certainly
+could that would be no problem could
+just do a create index on thing
+ascending and works just fine but if we
+want to create a unique index we cannot
+let me show you what a unique index
+would look like so let's drop the index
+we just created and now let's create a
+unique index
+I'm gonna call create index but this
+time we're gonna give one additional
+document in this command rather than
+just say create index thing one we're
+gonna say unique is true and if we do
+that what happens well we get an error
+and the reason we get an error is
+because it can't create a unique index
+when there's two things inside this
+collection that have the same value so
+let's drop the offending one so let's
+look at our stuff collection again and
+we see we have two apples so let's
+remove one of those apples we're gonna
+do it this way we're going to call
+remove we're going to find a document
+that has thing Apple in it and we're
+going to give one option to remove we're
+going to say that just one is true we
+want to remove just one if we do that we
+get number removed one and now if we
+look in the collection again we'll see
+we only have one Apple and now we should
+be able to add index that we want the
+unique index thing one unique true no
+problem we added the index and if we
+want to insert something that's already
+is in there like a pair we get a
+duplicate key error
+in addition if you look at the indexes
+on stuff by calling DB stuff get indexes
+you'll notice that the database tells
+you that the index on thing is unique
+now oddly it doesn't tell you that the
+index on underscore ID is unique
+although we've told you that the
+majority index is unique and it isn't
+unique so it's a vagary of the database
+that it won't admit that underscore ID
+is unique so we can prove that of course
+it is unique because if we try to put
+some documents into it let's say with
+underscore ID Andrew and we try to put
+two of those in there we're gonna find
+that does not work DB that stuff
+inserted let's try another one
+duplicate key error on underscore ID
+which is exactly the same error that we
+see on this other duplicate key error
+the e 11000 error on boat in both cases
+so even though the database doesn't tell
+you that they don't score ID index is
+unique it is unique all right
+so it's time for a quiz please provide
+the Mangla show command to create a
+unique index on student underscore ID
+class underscore ID ascending for the
+collection students type it below
+
+
+---
