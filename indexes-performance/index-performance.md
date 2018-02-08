@@ -1850,3 +1850,160 @@ collection students type it below
     db.students.createIndex( {"student_id" : 1, "class_id" : 1 }, { "unique" : true } );
 
 ---
+
+### Sparse Indexes
+
+https://youtu.be/ZznHByqtTMA
+
+
+alright we've shown you how to create
+unique indexes and now i want to show
+you how to create sparse indexes which
+are indexes that can be used when the
+index key is missing from some of the
+documents now let's look at these four
+documents here the first one has a B and
+C the second one has a B and C the third
+one is just a and B and the fourth one
+has just a and B and you'll also notice
+that the a values and the B values are
+unique as are the C values if I wanted
+to create a unique index on a that would
+be no problem because you can see that
+there's a unique value for a and in all
+four of the documents and a appears on
+all four documents any context on be
+wouldn't be a problem but unique index
+on C does pose a problem and the reason
+is that if you just create a unique
+index on see these documents both have a
+see value of null and hence it would
+violate the unique constraint to index
+on C for all four documents you actually
+could have a single document with null
+in it for C or C missing I should say
+and that would work fine but you
+couldn't have multiple documents what's
+a possible solution well one solution is
+that you can specify the sparse option
+when creating the index and what sparse
+tells the database server is that it
+should not include in the index
+documents that are missing the key so if
+you say give me an index on see it'll
+say fine these documents go in the index
+but these documents they won't even be
+indexed by this index because they have
+no value for C now let's see how this
+would work in practice all right I've
+created a small collection that I call
+employees and that collection has just a
+few employees and it actually form let's
+see how many employees that have it has
+five employees it has Elliott Dwight
+Megan Andrew and Shannon there's a real
+employees at the company and actually
+these are their real employee ID numbers
+in the sense that this is what order
+they joined the company I think Elliott
+set up the database so he made himself
+one and made Dwight his co-founder to
+and Megan Gill was still here and she's
+number nine so you can imagine that we
+probably want to have you
+unique index on employee ID and I added
+one to this collection but you might
+also want to have unique index on cell
+phone number because maybe you want to
+make sure that no two employees claim to
+be carrying the same cell phone number
+well that would work fine except that
+you can see that Andrew and Shannon
+don't have cell phones and so if you
+create a unique index without giving the
+sparse option it's not going to work so
+let me show you that so first let's look
+at the indexes that already exist in the
+collection by calling DB employees get
+the nexus and we'll see that there are
+two indexes right now in the collection
+one of them is underscore ID and the
+other one is on employee ID and is in
+fact unique so if I just try to add an
+index on cell phone cell ascending and
+make that unique and you can see I get a
+duplicate key error because we have more
+than one employee that has no cell phone
+number however if I specify an
+additional option sparse true now I can
+happily create the index I don't have an
+index on the cell phone you can see that
+I've got an index to underscore ID and
+one an employee ID and one on the cell
+phone which is also unique even though
+both myself and Shannon are missing cell
+phones in this collection we have these
+five employees and two of them are
+missing cell phones in the collection
+now interestingly enough if you go
+through all the documents and do a find
+and then sort the documents by employee
+ID which is one of our indexes you get a
+sort by employee ID which is the order I
+put them in anyway so it wasn't that
+interesting but maybe descending is
+slightly more interesting and that works
+fine and if you ask the database didn't
+use an index to satisfy that query by
+using the explain command which we're
+learning more and more about we can see
+that here in the winning plan for this
+fine sorted by employee ID it sorts the
+documents using the employee ID key and
+IX can that's going to be a very fast
+sort and this collection very large that
+could yield significant performance
+advantages because we you're able to use
+the index however if we do the exact
+same type of sort but instead of sorting
+on that sort on cell phone and we'll
+just sort ascending on the cell phone
+then
+what we're going to find is if we look
+here at the winning plan and the sort we
+can see it did a full collection scan it
+was not able to use that index on the
+cell phones now why is that that's
+because the database knows that this is
+a sparse index and it knows that there
+are entries missing that certain
+documents are not indexed and if it uses
+that index for the sort it knows it's
+going to omit documents and it doesn't
+want to omit the documents and so
+instead it reverts to a collection scan
+so you should keep in mind that a sparse
+index can't be used for sorting if there
+are any documents that are missing from
+the index and that's probably why you
+use the sparse index so it basically
+can't be used for sorting so keep that
+in mind now the good thing about a
+sparse index is that it could use a lot
+less space and that's one of the reasons
+why you might want to use a sparse index
+and of course it lets you create a
+unique index when you don't have an
+entry in every single document for the
+key that you want to index on all right
+now it's time for a quiz what are the
+advantages of a sparse index check all
+that apply the index will be smaller
+than it would if it were not sparse you
+gain greater flexibility with creating
+unique indexes your indexes can be multi
+key only if they are sparse and the
+index can be used to store it much more
+quickly in all cases please check the
+answer
+
