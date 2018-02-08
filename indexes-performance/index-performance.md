@@ -1741,16 +1741,20 @@ db.stuff.insert({'thing':'pear'});
 db.stuff.insert({'thing':'apple'});
 ```
 
-**Create index**
+**Create index**  
+
     db.stufff.createIndex({thing:1});
 
-**Create unique index**
+**Create unique index**  
+
     db.stufff.createIndex({thing:1}, {unique:true});
 
-**Remove one element**
+**Remove one element**  
+
     db.stuff.remove({thing:'apple'}, {justOne: true})
 
-**Check index**
+**Check index**  
+
     db.stuff.getIndexes();
     ... "unique": true
 
@@ -1843,5 +1847,6 @@ unique index on student underscore ID
 class underscore ID ascending for the
 collection students type it below
 
+    db.students.createIndex( {"student_id" : 1, "class_id" : 1 }, { "unique" : true } );
 
 ---
