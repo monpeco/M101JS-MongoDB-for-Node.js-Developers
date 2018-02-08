@@ -2024,6 +2024,23 @@ the primary completes building its index.
 
 You can read up on background index creation [here](https://docs.mongodb.com/manual/core/index-creation/#index-creation-background).
 
+Index Creation
+
+|Index Creation||
+|----------|----------|
+|Foreground|Background|
+|Fast|Slow|
+|Blocks writes and readers in database|Dont block reads and writes|
+
+**Foreground (Default), blocking**
+
+    db.students.createIndex({'scores.score':1})
+
+**Background, non blocking**
+
+    db.students.createIndex({'scores.score':1}, {background:true})
+
+
 alright now we know how to create
 indexes and how to create unique indexes
 and sparse indexes but the last concept
