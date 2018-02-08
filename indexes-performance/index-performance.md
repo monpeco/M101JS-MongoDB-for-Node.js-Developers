@@ -1363,3 +1363,342 @@ familiar to you if you watched a lesson
 which of these following inserts are
 valid
 this collection check all that apply
+
+---
+
+### Dot Notation and Multikey
+
+https://youtu.be/wT0_ktAZbBg
+
+**Creating index**
+
+```
+db.students.createIndex({'scores.score':1})
+db.students.getIndexes();
+```
+
+**Find all scores.score with a value of 99 or above**
+
+```
+db.students.explain().find({'scores.score': {'$gt':99} })
+
+"winningPlan": ...
+	... "stage" : "IXSCAN"
+	... "indexName" : "scores.score_1"
+	... "isMultuKey" : true
+	... "indexBounds" : { "scores.score" : [
+				"(99.0, inf.0]"
+				] }
+```
+
+**find all student with a exam with 99.8 or more score**
+```
+db.students.explain().find({'scores' : {$elemMatch: {type:'exam', score:{'$gt': 99.8} } } })
+```
+
+
+```
+"winningPlan": {
+	"stage" : "KEEP_MUTATIONS"
+	... "scores" : {
+			$elemMatch : {
+				"$and" : [
+					{"score": {"$gt":99.8} },
+					{"type": {"$eq":"exam"} }
+					]
+				}
+			}
+	...
+	},
+	{
+	... "stage" : "IXSCAN"
+	... "indexName" : "scores.score_1"
+	... "isMultuKey" : true
+	... "indexBounds" : { "scores.score" : [
+				"(99.8, inf.0]"
+				] }
+	}
+```
+
+The `$elemMatch` operator matches documents that contain an array field with at least one element that matches all the specified query criteria.
+
+
+**Wrong query, but interesting**
+db.students.explain().find({ '$and':[{'scores.type':'exam'},{'scores.score': {'$gt':99.8} }] }).pretty();
+
+
+now I want to talk to you about how you
+can use dot notation to reach deep into
+a document and an index is something
+that's in a sub document of the main
+document and also doing this with things
+that are arrays so combining multi key
+with dot notation this is a pretty cool
+feature of MongoDB it's a little tricky
+to explain how it works and may not
+exactly as you expect so let me show you
+some examples alright I'm back in the
+Mongo shell now and I'm gonna look at
+this students collection once again so
+DB dot students dot find one this is the
+same collection we looked at in the
+previous lesson and it has these
+documents that have structure where
+there's a student ID and then there's a
+scores array and the scores array has a
+bunch of documents as elements of the
+array where each document has a type
+exam and a score and it's also a class
+ID so let's say we wanted to index on
+this score itself we can do that the
+call would be as follows
+DB taught students that create index
+scores that score is one that's how we
+would do it that's what we'd create an
+index that would index this array and
+this sub part of this document and I did
+this off camera because it took about
+fifteen or twenty minutes to create this
+index because there's ten million
+documents there's four elements in this
+array and it took a long time so you can
+see what indexes are on it on the
+collection we'll do that right now
+and if you call DB get indexes you can
+see there are now two indexes on the
+collection one of them is an underscore
+ID and the other one is on scores dot
+score which is our multi key index so
+what can you do with that well first of
+all you could search for records where
+any score was above a certain value so
+let's look what that query looks like
+this will find everything where scores
+dot score is greater than 99 and I'm
+actually more interested in
+understanding what the query optimizer
+does with it then actually seeing the
+results so I'm using explain to return
+that information let's do that and if we
+did that query you can see that it's
+gonna do an index scan it says right
+here winning plan included the scores
+dot score index in the forward direction
+that looked for things with scores that
+scores between ninety nine point zero
+and infinity and that's how it retrieved
+this information and if we wanted to see
+that information we could just remove
+the explain part of this
+and then we'll get some documents back
+where there is a at least one score
+above 99 that's pretty printed so we can
+see that more clearly and you can see
+that in this case it was the homework
+that was above 99 so what if we wanted
+to find people that had an exam score
+that was above 99 how would we do that
+now I'm going to show you the query and
+then I'll show you a query that I used
+before I looked into it more carefully
+that turned out to be wrong I think it's
+an interesting example because it's easy
+to get confused about this so the query
+that would search for all the students
+where an exam score was above 99 looks
+like this and it uses this LM match
+operator so we're gonna go through this
+very carefully it's actually being run
+with explain right now but let's look at
+it so we're trying to inspect the scores
+array inside the document and then we
+want to find a document which has an
+element of the array that is of type
+exam and a score greater than 99 point 8
+and to do that we use this operator
+called LM match and what LM match does
+and you can look this up in
+documentation is it matches documents
+that contain an array filled with at
+least one element that matches all the
+specified query criteria so in other
+words there might be more than one
+element and won't be more than one exam
+in this array that matched this criteria
+but we're going to make sure that we
+match at least one with all of this
+criteria so it's looking for an element
+that's of type exam and score greater
+than 99.8 and if we do that let's first
+just get the results so we can confirm
+that works so I'm gonna pretty print the
+result we see that we get something that
+has an exam score above 99.8 works
+perfectly well it's very nice I wonder
+how many records there are just a
+curiosity that would satisfy this
+criteria and the answer is that there
+are 20,000 278 students that satisfy
+this criteria of having an exam score
+greater than 99 point 8 in this somewhat
+random dataset of 10 million documents
+all right well what does the explain
+output look like for this because that's
+that's sort of an interesting question
+to me all right
+let's run this with explain now to see
+what the query optimizer is going to do
+to satisfy this query and to do that I
+need to remove this count at the end
+I just need to do and explain tell it
+that I want to see what it would do with
+this find command it's gonna run that
+and it's pretty interesting we're gonna
+go over explain a more detail but you
+can see as well a lot of information
+here but the winning plan it's kind of
+easier to read this from the bottom to
+the top because actually you can't quite
+tell but this is the first thing it runs
+I believe it says that first it runs a
+query on scores that score being
+ninety-nine point eight to infinity okay
+that makes perfect sense because that's
+what the index is
+so it can't do any better than to look
+at the scores dot score key and then
+after that it runs the output of that
+this is an index scan into the next
+stage where it does it finds all the
+documents are satisfy that criteria
+which is probably 10 X or 4 5 X the
+number of documents that would have an
+exam of that score and then it runs the
+LM match and it says you know what I
+want to find something with a score
+that's greater than ninety nine point
+eight and a type that's exam calls this
+a fetch I don't believe it anything
+special I can do here I think it
+actually iterates through every single
+document and inspects them and we could
+confirm that by running it with value
+true and let it execute the query so we
+know how many documents it examines and
+the answer is that it examined so right
+here we can see the explained output a
+little bit hard to read on the screen
+but again we have the winning plan
+information it's exactly the same as
+before
+but now we have some additional
+information called execution stats and
+we just kind of go through here and look
+at what's interesting and then we can
+see that it returned twenty thousand
+documents okay it makes sense but it
+examined eighty thousand documents
+Wow okay and you know what that number
+is it's probably the number of documents
+that have score above ninety nine point
+eight so let's just confirm it that's
+true score greater than nine nine point
+eight give me a count of those and there
+are 80 thousand 54 documents that have
+score greater than ninety-nine point
+eight and it examined every single one
+of them for this query let's see if we
+can find this information here the
+execution stats for the query and you
+can see it examined eighty thousand
+fifty-four documents to return 20200 78
+documents that's because the way the
+MongoDB went through this query is it
+used the index it had which was on
+scores dot score and then after that it
+just essentially did a scan of
+everything that resulted to do the Ln
+match part of it all right now what
+mistake did I make when I was setting
+this lesson up and thinking about it
+that turned out to be wrong and the
+answer is I try to use this query and I
+won't go through it too carefully but I
+want to show it to you because it
+confused me all right here's the query I
+tried to use to get the answer of every
+student that had the exam above 99.8 I
+tried to use the and operator and said
+you know what I want to find things
+where scores that type is exam and
+scores that score is greater than
+ninety-nine point eight and when I did
+that you know what I found I found
+documents that look like this I found
+documents where there is a scoring
+greater than ninety nine point eight but
+I wasn't for the exam really interesting
+huh so actually if you use this and
+operator there's no guarantee that when
+it finds a document that satisfies this
+criteria without the Ln match part that
+it satisfies this criteria in the same
+sub part it might be a different part
+and this really comes out when you look
+at the explained output actually they
+explained out but it helps you
+understand the way the database
+interpreted this query and once you see
+this explained output you're like oh
+yeah of course makes perfect sense
+so the explained output said here's what
+we're gonna do here's the winning plan
+okay it said in the first stage in this
+lowest level stage I want to find
+everything with scores that score above
+ninety nine point eight and pass that up
+to the next stage and the next stage
+should look for things with scores that
+type equal exam oh dear that's not right
+because basically it's returning all
+these documents turning a huge number of
+documents from this stage well we know
+how many things like eighty thousand
+students have ninety-nine point eight
+and above so first it does this query
+finds all the students with us with any
+score above ninety nine point eight then
+it passed it to this next stage and says
+now finding all the documents which
+scores that type is equal to exam and
+that's not going to work because that is
+going to give you things where the score
+was not for the actual exam now compare
+that output - what output we got for the
+correct query with the LM match when we
+use the
+correct query for this look at the
+output very different in that case the
+first stage of the query did the exact
+same thing it looked for things with
+scores that score above ninety nine
+point eight but in the second stage we
+didn't just look for things of type exam
+we looked for an element match where
+both conditions were true where the
+score was again ninety-nine point eight
+we've reaffirmed that this was true for
+the document and that the type was exam
+all right that's a lot of information
+but I hope that helps better explain no
+pun intended
+how that works okay it's time for quiz
+suppose you have a collection called
+people the database earth and documents
+in the following form you can see the
+documents here what would be the command
+in the Mongo shell to create an index on
+company descending please type your
+answer right down here
+
+---
