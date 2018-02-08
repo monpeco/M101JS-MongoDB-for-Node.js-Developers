@@ -2184,3 +2184,281 @@ longer than the foreground and in Mongo
 background by default all right and
 please check your answer
 
+---
+
+### Using Explain
+
+https://youtu.be/liXIn8CnJaI
+
+
+okay you've seen explaining more than a
+few times during this unit but we
+haven't really gone into any great
+detail about what it does or how it
+works so explain is used to find out
+what the database is doing with your
+query how its executing it what indexes
+it's using and how many documents it
+inspected when it actually ran the query
+and the thing to remember about
+explained is that in all cases where you
+use and explain it doesn't bring the
+data back from the database it may do
+most of the work to do the query but
+doesn't actually bring data back all the
+way to the client so it's really used to
+figure out what database would do if it
+were gonna complete this query
+completely but it isn't an entire
+simulation of what it would happen if it
+if you did the query second a lot of
+what we've done in this unit shows you
+how to use explain from the shell which
+is one of the most useful places to
+examine your performance of any
+particular query but you can also use it
+from the drivers and from your
+application if you want now a MongoDB
+3.0 we change the way explain works
+especially in the shell we call this
+explain to do internally the first thing
+is that it used to be that you would
+call DB dot let's say foo if there was a
+query dot find and then that would
+essentially produce a cursor and then
+you would call explain after that but in
+300 we changed it so that instead the
+preferred method of using explain is to
+call DB foo that explain and that
+returns an explainable object and from
+there the expendable object you can run
+a find on you can also run an update on
+you can run a remove on it and aggregate
+and a few other things most notably you
+can't run an insert on it so insert is
+missing so you can't find out what the
+query optimizer would have done for an
+insert but honestly there isn't much to
+learn about inserts because inserts it
+puts the data in the database and it has
+to update all the indexes and that's
+really it so there's no find portion of
+an insert there's a fine portion of an
+update obviously I find the modify is
+allowed here including help and there
+are now helpers so if you're inside the
+shell and you call DB dot foo dot
+explain that help you're going to get
+help to figure out which function you
+can actually use with explain and again
+this right here is returning
+we call an explainable object now in the
+next lesson not this one we're gonna go
+over what parameters you can give to
+explain in terms of verbosity but in
+this one
+we're just gonna use it it's the fault
+form and see what it produces to
+understand it
+alright so let's go through some shell
+work so we can see this thing in action
+and understand it let's start the Mongo
+shell and let's fill a collection with
+some data and I'm gonna do that with
+cheat a little bit I'm gonna copy
+something that's gonna create
+approximately 1 million documents and
+this is just going to you could see it's
+a nested loop of JavaScript 100 100 100
+and then sending the a key the B key and
+the C key and it's also setting the
+underscore ID value to I believe just an
+increasing integer so we'll do that it's
+gonna take a little bit of time to
+insert a million objects into the
+database all right and now that's done
+we edited out some of that time but it
+took about 10 seconds now we're gonna
+add some indexes to the collection well
+first let's look at the collection so
+you can see what it looks like so I
+called this example so I'm going to do a
+find one on it I'll just do a find on it
+so you can see it and you can see that
+it's got data where these underscore IDs
+are increasing and then the a BC values
+they're gonna go up 100 of time until
+eventually the B value will increment
+there you go now the B value is
+incremented so you can see this just a
+lot of data varying and a B and C now
+let's add some indexes on this thing
+let's add two compound indexes one on a
+B and one on B so DB not example create
+index a comma 1 B comma 1 all right so
+we're adding index on a million objects
+those are actually pretty fast and now
+we're gonna add another index on just be
+okay now we've got two other indexes
+other than a no score ID index on this
+collection now let's say that we wanted
+to get an explainable object well let's
+let's do it this way VAR exp equals DB
+dot example dot explain and exp is an
+explainable object and now we're going
+to call well that's just for grins let's
+just call it a XP help
+so you can see what that produces and
+you can see it tells you all these great
+things you can do I can call fine I can
+call group I can call remove and call
+update it's very exciting so we're just
+going to call find so exp dot find and
+we'll look for one where a is 17 and B
+is 55 and maybe we will also sort it by
+B descending and you know we have two
+indexes on here one of them is on a
+comma B the other ones on B so you know
+we're not sure exactly what indexes are
+gonna get used to perform its query
+although you might have a pretty good
+guess if you understand the way indexes
+work and so we'll do that and we get a
+whole bunch of data back and in this
+form which is the default form it's
+gonna run it in query planner mode and
+you can see here it first gives you a
+form of the query that it used in the
+index and this is a JSON representation
+of an internal representation that the
+server uses for the query and then it
+shows you the plan this is the winning
+plan the winning plan is the most
+interesting part of course because the
+winning plan is the one that actually
+got chosen and it's good to read these
+things from inwards to outwards and you
+can see here that it said at the bottom
+level here and sometimes there are
+multiple input stages but here there's
+just one you can see that it did a an IX
+scan and used a and B of the index and
+the index users a underscore one B
+underscore one which we know is the
+index on a comma B if you do a DB dot
+example dot get indexes you'll see that
+index it's not a multi key index and
+decided to use it backwards which is
+probably because of the sorting order
+and right there it shows you the bounds
+and since we only were looking for a
+single document it just looked for
+something with the bound 17:17 5555 it
+also shows you the rejected plans in
+this case and says well you know it
+considered using the index on just B but
+that turned out to be a worse choice and
+so it didn't do it so this tells you
+that the database actually use the index
+that we expected it to use now there's
+no magic to the way we did this by first
+creating an explainable object we could
+also have done it this way
+DB data example that explained dot find
+but the same thing and this will give
+you the exact same result at first
+getting an explainable
+for the collection and then calling find
+no difference you can see here we have a
+rejected plan a B and an accepted plan
+of using a underscore 1b underscore one
+index so same exact result now in
+earlier versions of MongoDB the way that
+you would actually do an explain of this
+is by calling example not find dot
+explain that does something a little
+different what that does is it gets back
+a cursor because example that fine will
+bring back a cursor with the explain set
+on it but the results is saying when you
+see it in this shell so you won't see
+any differences you'll see the same
+rejected plan on the same accepted plan
+and in some ways it might seem more
+natural to call DBA the example that
+find not sort and just independent
+explain on it so you might ask well why
+did we change it up to have this idea of
+an explainable object and the reason we
+changed it up in this version in version
+3 ATO is because certain things don't
+return a cursor for instance if I wanted
+to run a count on this ok I can't then
+get an explained output watch doesn't
+work on the other hand if I use my
+explainable object exp and I do a count
+on that you can see I can actually get
+an explained output so one of the
+advantages to this new syntax of getting
+an explainable object for the collection
+and then calling the query operator is
+that it's opened up using explain on a
+larger set of things and it's also of
+course given us this awesome
+helper interface so now you know explain
+that help works and tells you all the
+things you can run explain on now let's
+look at another example let's look at
+something where it couldn't use an index
+and see what happens so that's not hard
+to do
+let's use our explainable object again
+exp and then look for a document would
+see being 200 now if you recall there's
+an index on a and B a comma B and
+there's an index on just B but there's
+no index on C so this query should in
+fact have to do a collection scan let's
+see what happens well it only considered
+one option the winning plan was to scan
+the whole collection in the forward
+direction for a document where C was 200
+no plans rejected because apparently it
+knew pretty much that it had no other
+options so again there are two ways to
+call explain
+you can get an explainable object or you
+can actually call explaining a cursor so
+let's look at that so if I do VAR cursor
+equals DB that example dot find a 99
+then I can call explain directly on this
+cursor and that's really equivalent of
+calling DB example I find out explain
+and I'll get a similar result telling me
+that it used it index in this case use
+the a1b1 index and then I can actually
+call next in the cursor if I want the
+result and that's just a little subtlety
+of the show which is that when you call
+DB dot example dot find without
+assigning it to a variable the show
+actually iterates the cursor for you
+whereas if you're started to a cursor
+then it doesn't iterate it for you're
+giving the opportunity to then and
+append and explain if you want kind of a
+lot of strange little nuances of the
+shell but I guess the real takeaway here
+is that the preferred way to call
+explain in this version of MongoDB is to
+call it on the collection first and to
+get an explainable object and then to do
+a find something like this okay now it's
+time for a quiz which of the following
+are valid ways to find out which index
+uses a particular query check all that
+apply and I'm not going to go through
+these and read them to you but take a
+look at them and try to see if you can
+figure out which ones work
+
