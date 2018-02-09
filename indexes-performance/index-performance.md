@@ -2215,6 +2215,19 @@ https://youtu.be/liXIn8CnJaI
 
     cursor.next();
 
+**This will show the index a query is using**
+
+    db.example.find({a:1, b:2}).explain()
+    db.example.explain().find({a:1, b:2})
+    db.example.explain().remove({a:1, b:2})
+    var exp = db.example.explain(); exp.find({a:1, b:2})
+    curs = db.example.find({a:1, b:2}); curs.explain()
+
+**This wont work, because** `remove` **dont returns a cursor**
+
+    db.example.find({a:1, b:2}).explain()
+
+
 okay you've seen explaining more than a
 few times during this unit but we
 haven't really gone into any great
