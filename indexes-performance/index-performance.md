@@ -2190,6 +2190,30 @@ please check your answer
 
 https://youtu.be/liXIn8CnJaI
 
+**Old version**
+
+    db.foo.find().explain()
+
+**Prefered version**
+
+    db.foo.explain().find()
+                    .update()
+                    .remove()
+                    .aggregate()
+    //Not with .insert()
+
+**Help**
+
+    db.foo.explain().help()
+
+**Use a cursor**
+
+    var cursor = db.example.find({a:99});
+    cursor.explain();
+
+**If we want execute the cursor**
+
+    cursor.next();
 
 okay you've seen explaining more than a
 few times during this unit but we
