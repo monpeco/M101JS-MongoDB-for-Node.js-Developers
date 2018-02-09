@@ -2499,3 +2499,366 @@ these and read them to you but take a
 look at them and try to see if you can
 figure out which ones work
 
+---
+
+### Explain Verbosity
+
+https://youtu.be/WxXVun6bZ20
+
+**Explain**
+
+* queryPlanner
+* executionStats
+* allPlansExecution
+
+**queryPlanner**
+
+What the db would do in terms of indexes, but it doesnt tell you what the result of using that index would be
+
+** executionStats**
+
+It will tell you what the result of using the index would be
+
+    var exp = db.example.explain("executionStats");
+    exp.find({a:17, b:55});
+
+    ...
+    "executionStats" : {
+       "nReturned" : 100,
+       "executionTimeMillis" : 0
+       "totalKeysExamined" : 100
+       "totalDocsExamined" : 100
+       "executionStages" : {
+           "inputStage" : {
+              "stage": "IXSCAN"
+              "nReturned" : 100,
+              "executionTimeMillsEstimate" : 0,
+       "" : 
+
+**Drop index**
+   
+   db.example.dropIndex({a:1, b:1});
+
+    exp.find({a:17, b:55});
+
+    ...
+    "executionStats" : {
+       "nReturned" : 100,
+       "executionTimeMillis" : 5
+       "totalKeysExamined" : 10000
+       "totalDocsExamined" : 10000
+       "executionStages" : {
+           "inputStage" : {
+              "stage" : "IXSCAN"
+              "keyPattern" : { "b" : 1 }
+              "nReturned" : 100,
+              "executionTimeMillsEstimate" : 0,
+       "" : 
+
+**allPlansExecution**
+
+    db.example.createIndex({a:1, b:1});
+
+    var exp = db.example.explain("allPlansExecution");
+
+Shows information about other execution plans, and shows how the db choose the other plan (the winning) and not the whole execution
+
+
+
+so far we've been looking at the explain
+command running in the query planner
+mode right here the query planner mode
+is very useful it's also the default
+mode for explain but there are two other
+modes I want to go over one is the
+execution stats mode and the other is
+the all plans execution mode and there's
+sort of increasing levels of verbosity
+because the execution stats mode
+includes the query planner mode and the
+all plans execution mode includes the
+query planner mode and the execution
+stats mode query planner tells you
+mostly what the database would use in
+terms of the indexes but it doesn't tell
+you what the results of using that index
+are for that we're gonna have to use the
+execution stats mode let's take a look
+once again at the shell we're going to
+use the same data that we use in the
+last lesson and just to review that data
+it's a bunch of data there's a million
+different documents with values for a B
+and C and we can also look at the
+indexes on the collection collection is
+called example you can see there's an
+index underscore ID of course and one on
+B and one on a comma B now let's run a
+query using the new execution stats mode
+that we just learned about so once again
+we're going to get an explainable object
+but this time we're going to give a
+different option this time we're going
+to create that object with execution
+stats as an option and we're going to
+put the result in this XP variable now
+we're gonna call exp dot find and we're
+gonna look at one document in the
+collection and we're gonna of course run
+the explain command an execution stats
+mode on this query versus actually do
+the query now let's look through this
+data and see what there is to see so
+once again we've got the query planner
+mode and the query planner mode tells us
+that it is going to use the a underscore
+B underscore one index and that it will
+pass that along and if the parse query
+was this all good it tells us that there
+was a rejected plan and the rejected
+plan was to use the B index on this
+that's helpful but it doesn't tell us
+what would have happened if it used each
+of these so the execution stats over
+here will tell us the execution stats
+for the winning plan
+there are certain key items that I want
+you to pay attention to there's a lot of
+data here and we're not going to look at
+all of it but one thing I want you to
+notice is the number of documents
+returned right here that's number of
+documents that the query actually
+returned or would return if it were
+running to completion and the data was
+brought back to the client which is a
+hundred documents we can see the
+execution time Milly's which is the time
+for the query which is unmeasurable in
+this case by this granularity of clock
+zero milliseconds a very fast query and
+we can see that there was 100 keys
+examined and 100 Doc's examined so that
+tells us something it tells us that the
+index worked pretty well we looked at
+all of 100 keys and we got to the
+hundred documents and then you can see
+here as we go down we can see for each
+stage we can see the number of documents
+returned from each stage and this is an
+inner stage here where it actually did
+the index scan and an index scan it
+returned 100 documents you can see the
+key pattern that was used for the index
+which was of course a B and the
+selectivity and again what it used to
+select on which was a min value 17 max
+value 17 beam in 55 max 55 and you can
+see it also provides an estimate of time
+for this stage of the query which is
+zero and you really read this from the
+bottom to the top if you're trying to
+understand the different stages of a
+query okay and because this part is an
+actual index scan it doesn't actually
+have any docs examined part of it but if
+you look in totality you can see that we
+examined 100 keys we got 100 documents
+and that sounds awesome and it was
+pretty darn fast now let's see what
+would happen if we didn't actually have
+this particular index to use we were
+selecting on a and B and we had an a
+comma B index so that was a pretty ideal
+index let's drop this index on a B
+ascending so we'll drop the index and it
+was three indexes now there's one
+excellent all right so at this point
+let's run the query again we can go back
+in our history by just going up arrow in
+the shell and we can already have an
+explainable object we can use it again
+we're gonna call find a 17 be 55 same
+exact query and now let's see what
+happens all right so the results are
+slightly different this time first of
+all the winning plan
+this awesome index is missing the
+winning plan is to use the B index it's
+not as good an index but it runs the B
+index right here and it says that it's
+going to use it with the balance fifty
+five fifty five makes sense and then
+it's going to pass that up to the fetch
+stage of the query which is after the
+index is run it fetches the final
+documents it's gonna look for the
+documents that a seventeen alright
+that's good enough sounds good and now
+we're gonna go down to the execution
+stats and see what happened and now
+things are a lot different so the first
+thing I notice is that there's actually
+an execution time here of five
+milliseconds which is much much longer
+than zero infinitely longer than zero
+although of course the first one wasn't
+actually zero it was probably just not
+quite one this queries a lot slower and
+that's not surprising because if you
+look down you can see that we examined
+10,000 keys and 10,000 documents and
+that's because the first stage of this
+index scan on be returned 10,000
+documents then had to be examined during
+the fetch stage let's see if this tells
+us that information as we go through it
+so let's see how do we understand this
+all right
+the innermost document was the first
+stage run the input stage and that ran a
+query using the index B and you can see
+that it returned 10,000 documents as
+part of that or I should say it returned
+pointers to 10,000 documents because of
+course the index scan didn't really
+return the documents and then up here
+those 10,000 documents had to be
+whittled down they were all examined
+with a filter of a equals 17 and they
+were whittled down to a final number of
+documents of 100 and whenever you see
+the number of documents examined much
+larger than the number of documents
+returned you know that you did a lot of
+extra work that you took a lot of extra
+data out of the database and at some
+point it had to be inspected and then
+rejected before it was returned to your
+actual client program all right so
+that's what happens when you give the
+option for execution stats now we said
+there's a third option and that third
+option is all plans execution so let's
+run it that way
+first let's recreate our index
+so DB dot example dot create index a
+sending be ascending about a million
+documents a few seconds there we go our
+index is back in the collection now
+let's get a new explainable object my
+new explainable object will have the
+option all plans execution now what does
+all plans execution do well all plans
+execution does what the query optimizer
+does periodically but the query
+optimizer does periodically is it runs
+all the possible indexes that could be
+used and it runs it in parallel and then
+makes a decision about which one is
+fastest and it periodically does this
+and then it remembers which one is
+fastest for a certain shape of query and
+it always uses that index but when you
+run the explain command in all plans
+execution you are running the the query
+optimizer that periodically runs to
+determine what index would be used for
+any particular shape of query so it
+gives you even more information about
+the different possibilities remember in
+the last one what we saw with the
+execution stats for the winning plan but
+we didn't see any execution stats for
+other plans so let's see what happens
+now we're gonna do the same exact query
+we did before and now now what do we get
+we get a lot more information certainly
+we have the execution stats that we had
+before and they look pretty much the
+same we did an index scan and we decided
+to use the winning index of a comma B
+but what about the all plans execution
+area which is right here what does that
+tell us
+well let's see the first one is actually
+the most interesting because the first
+one is considering using the B index a
+little hard to read on screen by the way
+this all plans execution is an array of
+different plans the first one was
+actually rejected it returns zero
+documents and the reason it was rejected
+is that the database ran the query using
+the B index right here B underscore one
+and when it did that they examined 101
+keys now we know from previously when we
+remove the a comma B index that to
+complete this query with just the be
+ended
+you'd look at 10,000 different documents
+but in this case you looked at 101 but
+why is that well the reason is that 101
+was as many as the database needed to
+see to know that it was a loser because
+and you'll see here it says that it
+returned zero documents so it says
+didn't return any documents from this
+plan this plan was eliminated said this
+is not a best plan I know that because I
+got to 101 documents examined and I have
+a plan here which is the second plan in
+the all plans execution which is going
+to return 100 documents and only look at
+a hundred documents I look at a hundred
+documents I look at a hundred keys and
+that's using the a comma B so now you
+can really see the logic as a database
+applied to make the decision which is as
+soon as it saw that using the B index
+index just on B was going to look at
+more documents than using the a comma B
+index it immediately abandoned that path
+and didn't follow it through to
+completion so although there's all plans
+execution mode will give you some
+execution information about alternative
+paths to satisfying this query it won't
+tell you everything that would have
+happened because it treats it just like
+the query optimizer when it knows that
+it's bad it stops and if you remember
+when we removed the actual a B index and
+ran this query it told us it looked at a
+lot more documents than that when it
+used just to be indexed and one thing to
+keep in mind with a database is it's
+good to have an index for every query
+that is that every query should hit it
+index but it's also important that every
+index that is on your collection that
+there be at least one query hitting it
+which is to say that when you have an
+index on a collection and it's never
+chosen it's never selected it's just a
+waste and you're wasting time inserting
+into that index and keeping that index
+up to date when in fact you don't need
+to be so you want to have a good balance
+between the indexes on your collection
+and the queries so that all the indexes
+get used and all the queries have at
+least one index that can satisfy them
+and work efficiently alright it's time
+for a quiz let's look at this option for
+verbosity given the following output
+from explain what is the
+description of what happened during the
+query this looks a lot like what we did
+in the class we are creating an
+explainable object and looking at this
+query so examine these results carefully
+and then figure out what happened and
+then picked the right answer
+
+
