@@ -3298,3 +3298,84 @@ attention to the size of your indexes
 make sure they can fit in memory so that
 you can realize the full performance
 benefits
+
+
+---
+
+### m101 23 index cardinality
+
+https://youtu.be/xiujksUfzUA
+
+|Regular|Sparse|Multikey|
+|-------|-------|-------|
+| 1:1 | <= documents | tags: [-,-,-] \n > documents|
+
+
+Lecture Notes
+In this lecture, we talk about the cost of moving documents, in terms of updating index entries. That cost 
+only exists in the MMAPv1 storage engine. In the WiredTiger storage engine, index entries don't contain 
+pointers to actual disk locations. Instead, in WiredTiger, the index points to an internal document 
+identifier (the [RecordId](https://docs.mongodb.com/manual/reference/method/cursor.showRecordId/#cursor.showRecordId)) 
+that is immutable. Therefore, when a document is updated, its index does not 
+need to be updated at all.
+
+Let's talk for a moment about index cardinality, which is
+how many index points are there for each different type
+of index that MongoDB supports.
+Now in a regular index, for every single key that you put
+in the index, there's certainly going
+to be an index point.
+And in addition, if there is no key, then there's going to
+be an index point under the null entry.
+So essentially, you get about one to one relative to the
+number of documents in the collection in terms of index
+cardinality.
+And that makes the index a certain size.
+And it's proportional to the collection size in terms of
+its end pointers to documents.
+In a sparse index, when a document is missing the key
+being indexed, it's not in the index because it's a null and
+we don't keep nulls in the index for a sparse index.
+So here, we're going to have index points that could be
+potentially less than or equal to the number of documents.
+And finally, here in a multikey index, which is an
+index on an array value--
+and an index becomes a multikey index as soon as you
+have at least one value inside any document that is an array.
+Then there may be multiple index
+points for each document.
+For instance, if there's some sort of tags array in a
+document, and it's got three or five or four tags, then
+there's going to be an index point for every single one of
+these keys.
+And so it could be greater than the number of documents.
+And it could be significantly greater than
+the number of documents.
+And this comes up because indexes need to be maintained.
+There's a cost of maintaining them.
+And if anything causes the index to have to get
+rewritten--
+For example, let's say a document moves.
+When a document moves-- and it might move because you just
+added something to it that makes it too large to fit in
+the space that the database has for it on disk, so it
+needs to move it to a new location.
+Every single index point that points to that document needs
+to be updated.
+Now, if the key is null for a particular index, well then
+there is no update that needs to happen to the index.
+If it's a regular index, well then yeah, one index point
+needs to get updated for sure.
+And if it's a multikey index, and there's 100 or 200 or 300
+items in an array, then they all need to get
+updated inside the index.
+All right, time for a quiz.
+Let's say you update a document with a key called
+tags and that update causes the document to need to get
+moved on disk.
+If the document has 100 tags in it, and if the tags array
+is indexed with a multikey index, how many index points
+need to be updated in the index to accommodate the move?
+Put just the number below.
+
+
