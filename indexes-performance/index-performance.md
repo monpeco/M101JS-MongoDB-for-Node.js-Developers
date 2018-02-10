@@ -3809,3 +3809,164 @@ And then hit Return and see if it's correct.
 You have to be pretty careful to make sure it's exactly the same
 because we're going to pattern match against that.
 
+---
+
+### text index
+
+https://youtu.be/nLau5Fx9LC8
+
+```
+{ "_id":ObjectId("4549844645"), "words" : "rat tree ruby." }
+{ "_id":ObjectId("454984464c"), "words" : "rat tree obsidian" }
+{ "_id":ObjectId("454984464c"), "words" : "dog tree ruby" }
+...
+```
+
+**Create a text search index**
+
+    db.sentences.ensureIndex({'words':'text'});
+
+
+**Search with the text index**
+
+    db.sentences.find( {$text: {$search:'dog'} } );
+
+**Find the best match (ranking best match)**
+
+    db.sentences.find( {$text: {$search:'dog'} }, {score:{$meta: 'textScore'}} ).sort({score: {$meta:'textScore'}});
+
+
+**Lecture Notes**
+At 0:36, Andrew says that when you search on strings with a standard index, the entire string must match. 
+This isn't entirely true; a regex search will search the index (rather than the full collection), and if 
+you anchor it on the left by beginning with ^, you can often do better still. Here's a link to the 
+documentation.
+
+
+
+Let's talk about another type of index
+that can be very useful when dealing with text.
+It's called a full text search index.
+So why would you use it and what would you use it for?
+Well, let's say you had a very large piece of text
+that was in a document, something like the US
+Constitution, which starts out, "We, the people of the United
+States, in order to form a more perfect union."
+Let's say you had that document right here in a key
+called My Text and you had the entire preamble to the US
+Constitution in this key, My Text,
+and you wanted to search it.
+Well, if you searched just on any given word,
+then you wouldn't get anything back because MongoDB,
+when you search on strings, the entire string
+needs to be there.
+So as an alternative, you could put every single word
+into an array and then use the set notation operators to push
+things into it and then search for whether or not
+the words are included, but that's pretty tedious
+and there are certain other features that would be missing.
+So instead, what we have is something called a full text
+search index, which is abbreviated text, which
+will index this entire document and every word much in the way
+an array is indexed to allow you to do queries into the text,
+basically applying the OR operator
+and looking for one of several words.
+So let's go look at now a specific case
+and see how it would work.
+We've created a collection called sentences,
+and this collection has got a bunch
+of mostly just randomly inserted words into a words key.
+There is no text search index on this right now.
+This is a regular collection.
+If I wanted to search for, let's say, "dog shrub ruby,"
+I could do it.
+There we go.
+So I searched for "dog shrub ruby"
+and I found this document with the words "dog, shrub, ruby,"
+but it's very particular.
+If I leave off the period, it doesn't find it.
+If I just do "dog ruby," doesn't find it,
+and if I just do "dog," it doesn't find it.
+That's not going to work too well for me to search
+on these different words.
+So now let's add a text index, db.sentences.ensureIndex,
+and now I want to put an index on words of type text.
+There we go.
+And now when I search it, "dog shrub ruby," it's
+going to work a lot better, so let's do that.
+Let's first look at the syntax for searching a full text
+index.
+The way it works is I have to say $text
+and then give a document with $search
+and then what I'm looking for.
+So we saw that, for instance, "dog" did not work before.
+Let's just look for "dog" now and see if that works.
+There we go.
+So now I searched for just the word "dog"
+and I was able to get all of these back that have "dog
+moss ruby," "dog shrub ruby."
+And then just to show you again, when I just
+search for "dog" using a regular search of words,
+I don't get anything, but if I search using a text index,
+I'm going to show you the syntax right here.
+I search using a text index by specifying $text and then
+$search and then what I'm looking for, "dog,"
+I do get documents back.
+I get all these documents back because they all
+have "dog" in them.
+And if I also say "moss," I get all of these back as well,
+and if I say "moss ruby," I'm going to get all these back,
+and it's quite flexible.
+Putting in a period makes no difference.
+Capitalization makes no difference.
+It's going to also ignore certain stop words that are not
+considered to be significant like "a" and "the"
+in the English language.
+So that's really very useful if I
+want to search for a bunch of different words
+and essentially apply a logical OR operator.
+Now, there's one other thing I wanted to show you,
+which is how you can get back these
+in an order that indicates how good a match MongoDB believes
+there is.
+So let's look for one of these.
+I'm going to show you the syntax for this.
+So let's look for "dog tree obsidian."
+Dog tree obsidian.
+Let me go back and change this.
+We can see the document right up there with "dog tree obsidian."
+The best match for "dog tree obsidian"
+should be the dog tree obsidian document,
+but we're going to do something special now.
+We're going to project a Score field,
+and we're going to use a special $meta operator
+and then take the text score, which
+is something that's internally computed as it
+runs through this text search.
+We're going to get that text score out
+and then we're going to sort by that text score.
+We're not going to test you on this syntax
+but I want you to know it exists if you ever need it.
+If you do that, you'll see that now, it's
+ranking the documents in order of their text score
+and that, if you're searching for "dog tree
+obsidian," the one with the highest score, a score of two,
+is the document with "dog tree obsidian," all three
+words in it, very useful if you want
+to find the best match for, let's say,
+a document that contains all the words.
+So now it's time for a quiz.
+Let's say you create a text index on the title
+field of the movies collection.
+Imagine having a movies collection,
+and then perform the following text search-- db.movies.find
+$text $search "Big Lebowski."
+Which of these documents might be
+returned if all of these documents
+are in the collection?
+
+
+
+
+
+
