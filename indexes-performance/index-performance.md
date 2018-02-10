@@ -3512,3 +3512,300 @@ closest three documents, to the location 74, 140.
 Please type it there.
 
 
+---
+
+### geospacial spherical
+
+https://youtu.be/pULU4DVsUWQ
+
+![image](https://upload.wikimedia.org/wikipedia/commons/b/bc/FedStats_Lat_long.png)
+
+* google maps show [latitud, longuitud]
+* MongoDB needs [longuitud, latitud]
+
+**GeoJSON**
+
+```json
+db.places.find().pretty()
+{
+  "_id" : ObjectId(46545435431877),
+  "name" : "Apple Store",
+  "city" : "Palo Alto",
+  "location" : {
+           "type" : "Point",
+           "coordinates" : [-122.1691291, 37.4434854]
+  },
+  "type" : "Retail"
+}
+
+"location" : {} //GeoJSON document, where "type", "Point" and "coordinates" are reserved words
+```
+
+**Create geospatial index**
+
+    db.places.createIndex({'location':'2dsphere'});
+
+**Run a query**
+
+```javascript
+db.places.find({
+  location:{
+    $near:{
+      $geometry:{
+        type: "Point",
+        coordinates: [-122.166641, 37.4278925], 
+        $maxDistance: 2000
+      }
+    } 
+  }
+})
+```
+
+**Redirect from a file**
+
+    mongo < geonear.js
+
+**Note**: Some operator dont require an index (like find in something that's within a shape), but all perform better with an index
+
+```json
+db.stores.find({loc: {
+                     $near:{
+                        $geometry:{
+                              type:"Point",
+                              coordinates: [-130, 39]
+                        },
+                        $maxDistance: 1000000
+                         
+                     }
+               }})
+```
+
+All right, now that we've talked about how
+to search for locations using a 2D index,
+I want to go over a more sophisticated type
+of geospatial indexing-- a spherical geospatial indexing
+that is also supported in MongoDB.
+Now, to start out, before you can talk about finding things
+in a 3D world, you have to talk about how you describe
+the location of something in a 3D world.
+So the world is actually a globe,
+and this is my poor representation of the globe.
+And locations on the globe are represented
+by longitude and latitude.
+So if you recall, latitude is how far off the equator
+is the object.
+So for instance, the equator is at zero degrees latitude,
+and you can go all the way from minus 90 degrees to 90 degrees.
+And that's your lines of latitude.
+And then we have the longitude.
+And the longitude-- this is a lot of longitude right here.
+It describes a line that goes from the north
+to the south pole.
+So in order to describe the location
+of any particular object on earth,
+you need its latitude and its longitude.
+Now, in addition, we're going to need
+a way of indexing these documents that
+have latitudes and longitudes in them.
+And the way we're going to do that is
+a new special type of index called 2dsphere.
+So let's talk about how we're going to do this.
+And I think the easiest way to get into this is by example.
+So I'm going to go through an example of a few locations that
+have been put into MongoDB documents.
+We're going to search near a location
+to find the closest locations.
+And we're going to use a 2dsphere index to do it.
+So let's start with the locations.
+So here's Palo Alto.
+And in Palo Alto we've got four locations that are near
+and dear to my heart.
+We've got Fry's Electronics, where
+I used to get small electronic components before people
+stopped building anything, in the late '90s.
+And the Pennisula Creamery, where
+you can get a great milkshake and a burger;
+the Apple store, where you can spend a lot of money;
+and Hoover Tower, which is a monument right
+in the center of Stanford's campus.
+And then there's one more location
+that I put on my little map, and that is Mount Tamalpais State
+Park-- top of Mount Tam is where I
+got engaged, so also a place near and dear to my heart,
+a bit further from Stanford.
+And we're going to put documents into MongoDB
+that represent these locations.
+All right, the first thing I want to show you
+is that Google Maps is very convenient for finding
+the latitude and longitude for locations.
+So let's look up Times Square, which
+is where we are right now.
+You'll see that what Google Maps will do is, in the browser URL,
+it will actually show you-- and we're
+right over here somewhere.
+It'll show you the latitude and the longitude.
+Now, it shows it to you in latitude comma longitude order.
+So the latitude is 40.75 here, and the longitude
+is minus 73.98.
+This is in the opposite order you're
+going to need it when you specify it in MongoDB.
+MongoDB takes a longitude comma latitude.
+All right, so how are we are we going
+to specify the locations of things?
+Well, we use a location specification called GeoJSON.
+And I'm going to show you that right now.
+This is a web page on GeoJSON, geojson.org.
+We implement only a small part of the specification
+on GeoJSON.
+But if you want, you can look at it
+and see the full specification.
+And in particular, the parts that we're
+going to be most interested in are the parts
+that specify points and geometries.
+And you can see there's coordinates and lists
+of coordinates.
+It's kind of a complicated thing when you've got-- especially
+if you want to describe a polygon.
+We're only going to do the most introductory lesson here
+right now.
+And then you can go look further if you
+want to see what all the different possibilities are.
+And MongoDB only supports a subset of these,
+like points and polygons.
+We don't support some of the more complicated structures.
+All right, so let's go into MongoDB now
+and see our documents.
+So I put them in a collection called "Places."
+So here we are.
+I'm going to pretty print them.
+And we're going to see the GeoJSON format at work.
+So here we have the Apple store.
+I decided to specify the city of Palo Alto.
+I decided to put my GeoJSON location information
+into a key called "location."
+This is my own decision.
+It's arbitrary.
+But you can call it anything you want.
+But I called it "location."
+And then everything after this paren
+and into this paren, that's a GeoJSON document.
+In this case, I've decided to describe it using a point.
+You could also describe it using a polygon
+if you wanted to give it some area,
+but we described it using a point.
+And the type is a reserved word, and coordinates
+is a reserved word.
+Point is a reserved word.
+And here are the coordinates in longitude comma
+latitude order, which I got from Google Maps.
+I decided to put that was a retail store
+into the collection.
+Again, we've got four objects in the collection.
+We've got this Apple store, this Peninsula Creamery,
+and Fry's Electronics.
+And then finally, Mount Tamalpais State Park.
+OK, so in order to query this, we're
+going to need an index on the GeoJSON documents.
+So let's do that-- db.places.ensureIndex.
+And it's going to be on location.
+And it's going be of type 2dsphere.
+Never understood why this is called 2dsphere.
+It seems to me that if you have a two dimensional
+sphere, that would be a circle.
+But what I think is trying to be expressed here
+is that although it's a 3D model--
+it's a spherical model-- that it's only
+looking at points on the surface of the sphere
+versus up in the air.
+So that's why it's called 2dsphere.
+So we're going to add that.
+And now there are two indexes on the collection,
+which is all good.
+Previously, there was one.
+I could show you the indexes.
+Hold on, getIndexes.
+The indexes are this _id index, which always comes with every
+collection, and then this index on location.
+So what query might we want to run?
+Well, I want to know the closest things to me,
+and I'm standing at Hoover Tower, in my imagination.
+So let's go through that.
+I'm going to quit from the shell here.
+And I've got a query that's been written our
+already to be a little bit easier to follow.
+So this query is going to search the Places collection, right
+here, and do a Find.
+And it's going to find documents by location, which
+is the field that we created to hold
+the locations of the various stores.
+And it's going to use the $near operator.
+Now, the $near operator is going to search
+for everything near a point, in this case.
+Now this $geometry is a required operator
+and can also give $maxDistance, which
+is the max distance in meters.
+I said 2,000 meters.
+Find me everything that is closest to these coordinates--
+minus 122.166641 degrees longitude, and 37 degrees 0.427
+blah, blah, blah latitude.
+And these are the coordinates of Hoover Tower
+that I got from Google Maps.
+So again, just to look at the format of this, we had a Find.
+We specified that we're looking at the Location field.
+We're applying the $near operator.
+And then, we have a GeoJSON document
+that specifies the geometry of type point
+with these coordinates.
+And that's it.
+So let's see what we get we do that.
+So Mongo-- I'm going to just redirect
+from this file to run a query.
+And it looks like we got back two documents.
+And these are going to be sorted in order of closest
+to furthest, which is a feature of the $near operator.
+The first one is the Peninsula Creamery--
+and it is, in fact, closest to Hoover Tower-- and then
+the Apple store, which is also within 2,000 meters of Hoover
+Tower.
+Notice that it eliminated Fry's and it
+eliminated Mount Tamalpais as being outside 2,000 meters.
+And just to review that with you to show you
+the map again so you see that this is the right answer,
+remember, we were looking at things closest to hover tower.
+And it said that within 2,000 meters,
+you've got the Peninsula Creamery at closest location,
+and Apple store, next closest.
+Fry's and Mount Tamalpais are off the screen.
+Fry's is on the screen, but out of the search radius.
+And Mount Tam is completely off the screen.
+And that's how you would actually
+search for something using the near operator.
+So again, the secrets are that you
+need to know the latitude and longitude of your documents.
+You also need to create a 2dsphere index
+if you want to use the $near operator.
+Some of the operators don't require
+having an index-- like, for instance, finding
+something that's within a shape.
+But they all perform better if there
+is an index on the location.
+And then you need to, of course, insert the locations
+and perform the query.
+OK, let's now do a quiz.
+What is the query that will query a collection
+named "Stores" to return the stores that
+are within one million meters of the location at this latitude
+and this longitude-- latitude 39, longitude minus 130.
+Type the query in the box below, and assume
+that the stores collection has a 2dsphere index already on it,
+on the key location.
+And use the $near operator, as we did in this lesson.
+And if you're looking for what the documents look
+like, this an example document.
+Might have an _id that looks like this with a store-id of 8
+and a location of type point, and these are the coordinates.
+So you have to write that query right here.
+And then hit Return and see if it's correct.
+You have to be pretty careful to make sure it's exactly the same
+because we're going to pattern match against that.
+
