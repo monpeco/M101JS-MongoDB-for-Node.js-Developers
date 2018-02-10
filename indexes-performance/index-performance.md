@@ -3181,3 +3181,120 @@ plans in the cache so this basic process
 is what MongoDB uses in order to figure
 out which index
 to use for the queries you submit
+
+
+---
+
+### How Large is your index
+
+https://youtu.be/wjA0eo_lihg
+
+**All indexes**
+    
+    db.students.getIndexes();
+
+**Get the size of the indexes**
+
+    db.students.stats();
+
+**Short-cut for just the total**
+
+    db.students.totalIndexSize();
+
+Wired tiger introduce the use of index compression, one is prefix compression
+This introduces change in index size (are smaller), but at the cost of CPU, and depends on the data.
+
+
+
+okay so now I want to talk a little bit
+about index sizes as with other
+databases with MongoDB it's very
+important that we're able to fit what's
+called the working set into memory so
+the working set is the portion of our
+data that clients are frequently
+accessing as you might imagine a key
+component of this is our indexes for
+performance reasons it's essential that
+we can fit the entire working set into
+memory because going to disk for data is
+a time consuming operation and
+performance will degrade significantly
+if for frequently accessed data we have
+to go to disk regularly now this is
+especially true with indexes because if
+in order to search an index we first
+have to pull it from disk into memory we
+lose a lot of the performance benefits
+of having the index in the first place
+so it's especially important that our
+indexes fit into memory so let's look at
+how we can measure the size of our
+indexes as a means of say estimating the
+amount of memory we'll need for a
+MongoDB deployment okay so let's take a
+look at our students collection we have
+individual students classes and the
+scores in this collection they're 10
+million records here so first let's take
+a look at what indexes we have okay and
+we can see that in addition to the
+primary index we have a secondary
+compound index on student ID and class
+ID now if we want to see the size of our
+indexes we can use the stats method so
+we call the stats method on the
+collection of interest and here we can
+see the total index size and this is
+also broken down for us into the
+individual sizes for the two collections
+that we have there's a shortcut method
+for this as well which gives us just the
+total so from this it looks like each
+index we have is adding 300 megabytes to
+our total index size and of course this
+has an impact then on how much memory
+our working set requires now with the
+release of my going to be 300 we've
+introduced the wired Tiger storage
+engine one of the key features of wired
+Tiger is that it supports a few
+different types of compression one of
+which called prefix compression allows
+us to have smaller indexes so that last
+example we looked at was against a
+MongoDB running the mfv one storage
+engine now let's take a look at index
+sizes for a three O server with the
+wired Tiger storage engine and in
+particular we've got index prefix
+compression turned on okay so let's
+launch a shell and connect to that Mongo
+D that one's running on the default port
+so I have exactly the same dataset
+loaded here again 10 million records and
+I've got the same indexes as I had in
+our last example
+so now let's take a look at the index
+sizes here and we can see that our total
+index size here is just under 200
+megabytes so rather than 300 megabytes
+each our indexes are something on the
+order of 100 megabytes each now I should
+also say that this compression comes at
+the cost of CPU and it really depends on
+your data set as to whether or not you
+can take advantage of something like
+prefix compression but it's something to
+be aware of and something I wanted to
+show you here I'll also just briefly
+point out that with a wired Tiger
+storage engine the stats output looks a
+little bit different in particular we've
+got this wired Tiger document that
+reports on a bunch of stats for that
+particular storage engine so again pay
+attention to the size of your indexes
+make sure they can fit in memory so that
+you can realize the full performance
+benefits
