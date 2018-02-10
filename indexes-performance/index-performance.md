@@ -3379,3 +3379,136 @@ need to be updated in the index to accommodate the move?
 Put just the number below.
 
 
+---
+
+
+### m101 30 geospatial
+
+https://youtu.be/UKUDYqNVL6I
+
+**Create the geospatial index**
+
+    db.stores.createIndex({location:'2d', type:1});
+
+**Find with the near operator**
+
+    db.store.find({location: {$near:[50,50]} })
+
+**Limit the query**
+
+    db.store.find({location: {$near:[50,50]} }).limit(5)
+
+The next topic I want to discuss with you
+is geospatial indexes.
+And geospatial indexes allow you to find
+things based on location.
+The first model we're going to discuss is a two-dimensional
+model, and then we'll go over a three-dimensional model in
+another lesson.
+Now in a 2D world, we've got a Cartesian plane,
+y-coordinates, and you may have a bunch of different
+objects out in that world.
+So for instance, you might have a restaurant here and a
+barber shop here and a grocery store here and a hardware
+store here.
+And then, you also have, typically, a person right here
+with his little coordinates, x comma y.
+And what you want to know is, well, what's
+closest to this person?
+What are the establishments that are closest to this
+person, maybe of a certain type?
+And how do you figure out where those are?
+Now the way we do this is that, in order to do searches
+based on location, first of all, your document need to
+have some sort of x,y location stored in it.
+I'm just going to call it location, but to be clear, it
+is just my name.
+And in that, you store an array of values which are the
+x, y-coordinates.
+And then once you do that, you need to also use ensureIndex
+to tell the database that these are locations that need
+to be indexed so that you can search them.
+And you do that by specifying that you want to have there be
+an index on location--
+again, just my word--
+and that the index is type 2D.
+And that's the reserve type.
+That tells the database that this is a two-dimensional
+geospatial index.
+If there are some other pieces of information you want to
+have be a part of the index, there's a compound index, you
+can add that.
+So if there's a store type or something or an establishment
+type, you can put that in, ascending.
+That's optional, but it can be a compound index.
+Now, the last part of this is that you're going to need some
+sort of query operator to work on this.
+And there's a few different query operators, but I'm going
+to just tell you about one of them right now which is the
+$near operator.
+And so the way you would do a find on this, you'd say, OK,
+find all the locations that are $near, colon, and then
+this would be the x, y-coordinates of where that
+person was standing.
+So just to over it again, you have to have something in the
+document right here that specifies the x,
+y-coordinates.
+You need to have an index that tells the database that there
+are x, y-coordinates stored in the document.
+You give type 2D.
+And then in your find, you can call the $near operator and
+say, oh, find me all the locations that are near this
+particular set of x, y-coordinates, and the
+database will return them in the order
+of increasing distance.
+And practically speaking, the way this is often used is
+through a limit.
+So you'd say limit(20), and then that would give me, let's
+say, all the shops or the stores that were closest to
+this person standing at coordinates x,y, limiting to
+20 of them.
+Let's go through a little example in the Shell.
+All right, I've got a small collection here that is called
+stores, and it has three establishments.
+So you can see the three establishments right here.
+They are Ruby--
+it's a barber at location 40, 74--
+and then, ACE hardware, a hardware store, at location
+40, minus 74, and then, Tickle Candy, a food
+store, at this location.
+I've added an index using this command--
+let me show it to you--
+db.stores.ensureIndex, location: 2D.
+And again, I named it location, but it doesn't need
+to be named location.
+You can call it whatever you want, or loc or
+whatever you want.
+And then type ascending.
+I said, oh, wouldn't it be nice to also be able to filter
+and sort by the type of establishment it is, so I
+added that.
+You can see all the indexes that are on there.
+So you can see that there's two indexes on this
+collection, the default one under underscore id, and the
+second one, a two-dimensional index, a compound index where
+location is the first part of it.
+And then, type is the second part of it.
+And this is the name of the index.
+And to do a query, here's a typical query.
+So find me every document whose location is near 50, 50
+and you're going to return them to me in order of
+increasing distance.
+So I do that, and then it shows me the three of them.
+It says that the one that's closest to 50, 50 is 40, 74,
+and then 40.2, minus 74 is next closest, and then 41,
+minus 75, which makes sense to me just looking
+at them real quickly.
+All right, so let's do a quiz.
+Here's the quiz.
+Suppose you have a 2D geospatial index defined on
+the key location in the collection places.
+Write a query that will find the closest three places, the
+closest three documents, to the location 74, 140.
+Please type it there.
+
+
