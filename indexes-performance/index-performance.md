@@ -2862,3 +2862,142 @@ and then figure out what happened and
 then picked the right answer
 
 
+---
+
+### Covered Queries
+
+https://youtu.be/QyV79jsSJ9Y
+
+okay now I want to talk to you about the
+concept of a covered query now it
+covered query is not a query that is
+covered by a house but instead it's a
+query where the query itself can be
+satisfied entirely with an index and
+hence zero documents need to be
+inspected to satisfy the query now if
+you can satisfy a query entirely from
+the index that's gonna make the query a
+lot faster let's go through an example
+in the shell to see how it works
+all right I have a collection that I
+call numbers that has a million
+documents in it and it was just put in
+here with a nested loop of I J and K so
+pretty straightforward and if we look at
+numbers and we see what the indexes are
+on it we see that there are in fact two
+indexes there's an index on underscore
+ID and there's an index on I JK those
+are the only indexes so let's see how we
+would create a query and find out
+whether it's covered so I'm going to
+create an explainable object VAR exp
+equals DB numbers dot explain and I'm
+going to use the execution stats level
+of output now we're gonna use that
+object to call find and we're gonna look
+for something where I is 45 J is 23 and
+that's it and let's see what that
+produces so that's this is our explain
+output actually before we look at that
+let's just go back and see what the
+actual result would be of that I'll give
+it a little bit more context you can see
+that if we gave that query we get a
+bunch of documents with I J and K and an
+underscore ID and looking at the
+explained output and going up into the
+execution stats part we see that there
+were a hundred documents that were
+returned and that's right here and you
+can see that there were a hundred
+documents examined and you could see
+there were 100 keys examined so if
+documents were examined that doesn't
+sound like a covered index and the
+question is since there was an index in
+ijk and since we only asked the CI JK
+why is it that this
+we had to actually look at the documents
+doesn't make a lot of sense and you can
+see that it did use an index scan here
+and that it used the ijk index and the
+reason is that we also asked to see
+underscore ID and underscore ID is not
+included in that index and so it had to
+go to the documents to actually return
+the result let's change the query a
+little bit and specifically project out
+underscore ID 0 i1 j1 now we're saying
+we want to see the I and J values and we
+don't want to see the underscore ID
+value will see the K value that won't
+change the result in this case because
+this is an index and a JK now if we did
+that query and we look at the execution
+stats again in this explain output we
+see that once again we got a hundred
+documents out but this time the number
+of total keys examined is a hundred but
+the number of total documents examined
+is zero and when the number of total
+documents examined to zero and we use an
+index and we return results we have a
+number of documents returned that's
+greater than zero that's a covered query
+and this query was covered by that index
+entirely and if we ran the query without
+the explained DB dot numbers not find we
+would see that we're returning only the
+results for I J and K and no underscore
+ID values and therefore we can satisfy
+this entirely with the index now here's
+a slightly surprising result which is
+that if we call this query like this
+where we suppress the underscore ID
+right here and I'm silent on the other
+options we get pretty much the exact
+same output this is exactly the same
+output but if you do an explain of this
+query I'm gonna find on the explainable
+object with the same query where I and J
+is specified and underscore ID is
+suppressed we're gonna find that in fact
+if you go to the top of the execution
+stats a hundred documents were examined
+then 100 keys were examined and a
+hundred documents were returned so
+what's going on here that seems kind of
+weird it's a little subtle but the issue
+is that with this query when we suppress
+underscore ID but are silent on what we
+want to do with the other keys
+the document MongoDB needs to inspect
+every document because it doesn't know
+if there's another key in a document
+that could be an L or a P key in a
+document doesn't know for sure that it
+could satisfy this query with just the
+ijk index only in the case where you
+project exactly what's in the index or I
+should say a subset of what's in the
+index and if it's an index doesn't
+include underscore ID then underscore ID
+has to be suppressed it's only in the
+case where the index could completely
+satisfy the query with certainty that
+it's covered and the database can avoid
+looking at the documents if there's any
+possibility of having to present the
+value for a key that's not in the index
+then it can't just stick with the index
+that's to go to the documents all right
+now it is time for a quiz we'd like to
+perform a covered query on the example
+collection and this example collection
+it's called example and it's right here
+it has these indexes which of the
+following is likely to be a covered
+query check all that apply
+
