@@ -3099,3 +3099,85 @@ is what MongoDB uses in order to figure
 out which index
 to use for the queries you submit
 
+
+--
+
+### Choosing an Index
+
+https://youtu.be/JyQlxDc549c
+
+```
+ 1      2      3 ------------> Cache
+__________________
+ |      |      |    1)Threshold   2) rebuild  3) Add    4) Mongod
+ |      |      |        writes        index     Remove     restared
+ |      |      |       (1000 w)                 index
+ |             |
+               |
+__________________
+
+All the results
+Threshold of results (sorted)
+```
+
+okay now let's take a look at how
+MongoDB chooses an index to satisfy a
+query let's imagine we have five indexes
+when a query comes in I'm going to be
+looks at the query shape shape has to do
+with what fields are being searched on
+and additional information such as is
+there a sort based on that information
+the system identifies a set of candidate
+indexes that it may be able to use in
+satisfying the query so let's assume we
+have a query come in and three of our
+five indexes are identified as
+candidates for this query so one two and
+three
+MongoDB will then create three query
+plans one each for these indexes and in
+three parallel threads issue the query
+such that each one will use a different
+index and see which one is able to
+return results the fastest so visually
+we can think of this as array something
+like this the idea here is that the
+first query plan to reach a goal state
+as the winner but more importantly going
+forward it'll be selected as the index
+the use for queries that have that same
+query shape so what's the goal state
+here well it can be one of a couple of
+things so it could be that one of the
+query plans returned all the results for
+the query another way a query plan can
+win is by returning a certain threshold
+number of results but there's a caveat
+here and that is that it's able to
+return the results in sort order now the
+real value of doing this is that for
+subsequent queries that have the same
+query shape MongoDB knows which index to
+select the way we achieve that is
+through the use of a cache so the
+winning query plan is stored in the
+cache for future use for queries of that
+shape now of course over time our
+collection changes the indexes change so
+we don't want this to necessarily be the
+index we use forever so there are
+several ways in which a query plan will
+end up being evicted from the cache one
+of those is if there are a threshold
+number of writes right now that
+threshold is a thousand writes another
+way of course is if we rebuild the index
+or if any index is either added or
+dropped from the collection and finally
+if the Mongo D process is restarted we
+would also lose the query plan and other
+plans in the cache so this basic process
+is what MongoDB uses in order to figure
+out which index
+to use for the queries you submit
