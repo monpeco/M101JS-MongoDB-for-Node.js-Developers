@@ -4183,3 +4183,204 @@ what we'd really like to see is that an
 returned is in fact very close to total
 Keys examined so one way of addressing
 this is to design a better index
+
+
+---
+
+### Efficiency of Index Use 2
+
+https://youtu.be/g032EW67SRA
+
+**Create an index**
+
+    db.students.createIndex({class_id:1, student_id:1});
+
+**The execution is better**
+
+    db.students.find({student_id: {$gt:500000}, class_id:54}).sort({final_grade:1}).explain("executionsStats");
+
+```
+"nReturned" : 10118,
+
+"executionTimeMills" : 138,
+
+"totalKeysExamined" : 10118,
+
+"totalDocsExamined" : 10118,
+
+"winningPlan":
+"stage" : "SORT",
+
+"sortPattern" : { "final_grade":1 }
+```
+
+**This will create the index that is more appropieate**
+
+```
+db.students.createIndex({class_id:1, student_id:1, final_grade:1});
+
+db.students.find({student_id: {$gt:500000}, class_id:54}).sort({final_grade:-1}).explain("executionsStats");
+"nReturned" : 10118,
+
+"executionTimeMills" : 27,
+
+"totalKeysExamined" : 10204,
+
+"totalDocsExamined" : 10118,
+
+"winningPlan":
+//Does not have a SORT stage
+```
+
+**Lecture Notes**
+At about 3:13, Shannon mentions that MongoDB can walk the index backward in order to sort on the 
+final_grade field. While true given that we are sorting on only this field, if we want to sort on 
+multiple fields, the direction of each field on which we want to sort in a query must be the same 
+as the direction of each field specified in the index. So if we want to sort using something like 
+db.collection.find( { a: 75 } ).sort( { a: 1, b: -1 } ), we must specify the index using the same 
+directions, e.g., db.collection.createIndex( { a: 1, b: -1 } ).
+
+
+so here is that index off-screen have
+gone ahead and created a compound index
+based on class ID and student ID so with
+class ideas the prefix will be using the
+most selective part of our query the
+point or a quality query now generally
+speaking and this won't hold for all
+data sets but generally speaking when
+you're building compound indexes as
+you're thinking about field loader in
+the compound index you want to work with
+fields on what you're going to be doing
+equality queries first putting them
+before range queries as we did here ok
+now I'm going to mix things up a little
+bit and you can see here that I've
+actually changed the sort we want to do
+to use that final grade field that I
+introduced when we first started looking
+at this particular example so let's run
+this query now and see what explain
+tells us about performance ok that was
+fast so we scroll up to execution stats
+and look at this number return is
+exactly equal to the total keys examined
+and the total Doc's examine our
+execution time is 138 milliseconds so
+let's look at the query plan here then
+and here I want to call your attention
+to the fact that we have a short stage
+now what that means is that we're doing
+an in-memory sort and I bet you can
+figure out why because we can see from
+the index scan stage that we're using
+that new index that we created the
+compound index on class ID and student
+ID no mention of final grade here so in
+order to sort we're going to have to do
+the sort in memory generally speaking
+it's best to avoid in memory sorts when
+we can but in order to do that we're
+going to have to make a trade off and
+that is and this is typically the
+trade-off you have we're going to have
+to examine a few more Keys than the
+number of documents we return in order
+to be able to do that sort in the
+database so let me show you what I mean
+so we created this index here well let's
+think about how this works we're
+creating a bunch of pairs of values in
+effect of class ID and student ID but
+what we'd like to be able to do is walk
+the index in sort order ok so in order
+to do that well we've got our most
+selective part of our query here which
+is fine because we want to identify
+every single record that uses the class
+ID specified in the query
+but then in order to be able to sort
+within the index we have to be able to
+walk the index keys in order which means
+that we're going to have to have that
+field on which for sorting as part of a
+compound index and it's going to have to
+go immediately after class ID so we want
+to create another compound index and in
+fact this is the one that we really want
+if a common query pattern is this one
+that we're looking at because this will
+very selectively identify the records
+that we want to look at and then by
+walking the next component of the keys
+all the way through the index will be
+able to pull out all of the records in
+the specified sort order and what we can
+do along the way is we're walking
+through those keys is simply eliminate
+any that don't match the student ID
+range that we're looking for ok so we're
+going to have to touch a few more index
+keys then we'll end up being in our
+result set but by doing this sort in the
+database we're going to save ourselves
+execution time so let's create this
+index it'll take a little while ok and
+our index finished up so let's take a
+look now there is one thing I want to
+tweak about this and that is that I want
+to change the way we're sorting so that
+we're sorting in descending order and
+this index we created will work just
+fine for that because my going to be can
+walk the index in reverse order just as
+easily so let's run our query ok now
+let's take a look at what happened here
+ok now this is going to vary depending
+on what else is going on in the system
+but you can see that our execution time
+is down quite a bit and this is because
+doing the sort in the database by simply
+walking the index he's in order it's
+going to save us execution time and if
+we look at the query plan we can see
+that the winning plan does not any
+longer have a sort stage and in fact
+what we ended up using was the index
+that we just created ok so why is this a
+better index for this query well for
+this data set we know that class is very
+selective by specifying an individual
+class ID we're eliminating easily more
+than ninety percent of the data set in
+fact it's quite a bit more than ninety
+percent and by specifying this we can
+simply walk the index keys in order in
+order to get our sorted result set and
+along the way based on the student ID
+component of this compound index we can
+simply make this comparison to get rid
+of
+any records that don't match this range
+constraint and if we take a look at the
+explained output one more time we'll see
+that that trade-off is in fact they're
+that good execution time but we are
+walking a few more index keys then we
+have documents in our results set but in
+many cases this is a trade-off that's
+well worth making okay so this gives you
+some idea of how to think a little bit
+about structuring indexes and we looked
+at compound indexes because this is
+where people have the most difficulty
+setting up their indexes thinking about
+selectivity and thinking about how to
+get our sorts accomplished in the
+database gives us indexes that pretty
+efficiently handle our operations
+
+
+
+
