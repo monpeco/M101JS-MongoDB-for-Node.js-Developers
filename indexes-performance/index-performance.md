@@ -2868,6 +2868,35 @@ then picked the right answer
 
 https://youtu.be/QyV79jsSJ9Y
 
+Lets run a normal query
+
+    var exp = db.numbers.explain("executionStats");
+    exp.find({i:45, j:23});
+    ...
+    "executionStats" : {
+       "nReturned" : 100,
+       "totalKeysExamined" : 100
+       "totalDocsExamined" : 100
+
+If we project only the fields (or a subset) in the index, mongo wont need to scan the documents
+
+    exp.find({i:45, j:23}, {_id:0, i:1, j:1 ,k:1});
+    ...
+    "executionStats" : {
+       "nReturned" : 100,
+       "totalKeysExamined" : 100
+       "totalDocsExamined" : 0
+
+If we do not project the fields, mongo will have to scan all documents to ensure that there is no other fields
+
+    exp.find({i:45, j:23}, {_id:0});
+       ...
+    "executionStats" : {
+       "nReturned" : 100,
+       "totalKeysExamined" : 100
+       "totalDocsExamined" : 100
+       
+       
 okay now I want to talk to you about the
 concept of a covered query now it
 covered query is not a query that is
