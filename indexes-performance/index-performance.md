@@ -4381,6 +4381,222 @@ get our sorts accomplished in the
 database gives us indexes that pretty
 efficiently handle our operations
 
+---
+
+### m101 33 logging slow queries
+
+https://youtu.be/aWuvC-O7Qkk
+
+We've talked about how you create indexes and we've
+talked about how you use the explain command to figure out
+what indexes are getting used and how they're getting used
+in your queries, but ultimately, about the
+performance of your programs you're going to need to do
+some profiling to figure out what is
+slow inside your programs.
+Now, there's actually, there is a profiler built into Mongo
+D and I'm going to teach you how to turn that on, but
+before you even do that there's a default facility
+that could help you and that is that Mongo automatically
+logs slow queries of above 100 milliseconds right to the log
+that Mongo D writes when you start it up.
+So this is a default logging facility
+that can be very useful.
+So let me show you how that works.
+So I'm going to start Mongo D here with the default.
+Here, I'll shut it down.
+I have a DB path and nothing else set.
+If I do that, all right, do nothing else and then I go
+over here to my Mongo shell.
+I'm going to have to reconnect, so the first time I
+hit this, it's not going to do it.
+And now, I'm going to do a find on the student's
+collection, and student's collection is a 10 million
+document collection that we've seen many times.
+And I took all the indexes off it so it's going to be slow
+since it has to scan the whole collection, if I look for
+student ID 10,000.
+So I'm going to do that.
+It's going to take a while.
+It has to spin up a disc even to do it because I haven't
+done it in a while.
+It finds the object in question, finds the
+document, all good.
+And if we go here, into the log, you can see, right here
+it says that there was this really slow query.
+It actually gives me the query, I looked for student ID
+10,000 and it was in school dot students and it took about
+four seconds.
+Very useful and certainly, you should be checking your logs
+to make sure you don't have a lot of slow queries and this
+is something that's built in and you don't need to do
+anything to get this.
+It's automatic.
 
 
+---
 
+### m101 34 profiling
+
+https://youtu.be/pN1Yhrup9-I
+
+**Init profiler (within the mongod)**
+
+    mongod --profile 1 --slowms 2
+
+**Look all queries in the profiler**
+    
+    db.system.profile.find().pretty()
+
+**Queries on foo collection order by timestamp**
+
+    db.system.profile.find({ns:/test/foo/}).sort({ts:1}).pretty()
+
+**Search for queries slower that a duration**
+
+    db.system.profile.find({mills:{$gt:1}}).sort({ts:1}).pretty()
+
+**Get the status of profiler**
+
+    db.getProfilingLevel() 
+    1
+
+    db.getProfilingStatus()
+    {"was":1, "slowms":2}
+
+**Set the profiling level**
+
+    db.setProfilingLevel(1,4)
+
+**Turn off**
+
+    db.setProfilingLevel(0)
+
+
+**Lecture Notes**
+
+The exact output of the profiler varies with MongoDB version and with storage engine.
+
+We recommend you check [the docs](https://docs.mongodb.com/manual/reference/database-profiler/) 
+for the specifics of what your query profile is telling you.
+
+
+Now let's talk about the profiler.
+The profiler is a more sophisticated facility.
+It will write entries, documents, to system.profile
+for any query that takes longer than some specified
+period of time.
+There are three levels for the profiler.
+There's level zero, level one, and level two.
+Levels zero is the default level, and it means it is off.
+Level one means, I want to log my slow queries.
+And level two means, I want to log all my queries.
+So why would you want to log all your queries?
+And the reason is because not so much for performance
+debugging, but because when you're writing a program, it's
+convenient to see all the database traffic so that you
+can figure out whether the program is
+doing what you expect.
+So this is really more of a general debugging feature than
+a performance debugging feature.
+And you might want to use that when you're debugging your own
+programs, to turn the profiler on a level two and see
+everything that's happening in the system.
+But right now, we're going to focus on this level one which
+is logging the slow queries.
+Let's go and start Mongo up logging slow queries.
+So we're going to run mongod minus dbpath and, same as
+before, the one I used.
+And then minus profile one, log my slow queries, anything
+above two milliseconds.
+So I'm going to do that.
+And now, it's logging my slow queries.
+And now, I'm going to do a slow query.
+So I'm going to do that same query again.
+All right, it took a while.
+It took about four seconds.
+And now, I'm going to look in db.system.profile and see what
+there is to see.
+And this is the query we just did.
+We can see that there's a query to the students
+collection, that we were looking
+for student_id: 10,000.
+It happened here, this time stamp.
+And it scanned 10 million documents.
+That sounds slow.
+It returned one document, and took 4.2 seconds, 4,231
+milliseconds.
+So this is going to be really useful.
+And you can see it actually returned
+more than one document.
+It returned some of the work I did before.
+This is a cap collection, which means that there's a
+fixed size collection and it will recycle space in the
+collection after it uses it up.
+So we can use this information.
+We can query on it.
+So we see, for instance this millis over 4,000.
+So let me show you some of kind of queries you can do.
+So in here, I'm doing a find in the profile collection
+looking for anything with test.foo in it in the name
+space, which is the foo collection which is another
+collections I've been writing queries to as well.
+And then, sort it by the time stamp, prettyprint it.
+And you see there's nothing in there right now from test.foo.
+But if I switch that up to be school.students collection,
+I'll get the query we just did.
+We can also look for things that are slower
+than a certain duration.
+Let me show you how that works.
+Here we go.
+This is a query, again, of the system.profile where we're
+looking for things that have milliseconds greater than one.
+And we're going to sort by the time stamp again and
+prettyprint it.
+Very convenient.
+So that's how you would use the profile
+information you get.
+You can turn on this profiler from the Mongo shell.
+Let me show you how to do that.
+So you can get the profile status.
+Here, let me show you that.
+getProfilingLevel--
+we're set to level one right now.
+Let's get the status.
+And you can see it's set to one, which is slow queries,
+anything above two milliseconds.
+We can set the status if we want.
+This is how you turn the profiler on
+from the Mongo Shell.
+Let's set it to level one, but I want to only look at things
+that are longer than four milliseconds.
+If I do that, oh I meant set the
+profiling level, not status.
+If you set the profiling level--
+right here--
+set profiling level to 1 comma 4, that means slow queries
+above four milliseconds.
+And now it tells me what it used to be, just so I can do
+some debugging information.
+But if I do a get of the status, I can see that it's
+now set to level one and anything above four.
+If I want to turn it off entirely, I just set it to
+zero, and that should fix it up for me. setProfilingLevel--
+and if I get the profiling status now, I
+should see it's zero.
+And if I get the profiling level, which is another
+command, it'll also tell me it's zero.
+So those are the commands you might want to know which is to
+get the profiling level, that'll tell
+you what it's doing.
+If you want to set the profiling
+level, you can set it.
+It takes two parameters.
+I only gave one here because I was turning it off.
+But it takes two parameters which is the level and then
+the number of milliseconds that I want to log beyond, any
+query that exceeds that will get logged.
+OK, it is time for a quiz.
+Write the query to look in the system.profile profile
+collection for all the queries that took longer than one
+second ordered by timestamp descending.
