@@ -4600,3 +4600,136 @@ OK, it is time for a quiz.
 Write the query to look in the system.profile profile
 collection for all the queries that took longer than one
 second ordered by timestamp descending.
+
+
+---
+
+### m101 36 mongotop
+
+https://youtu.be/D9YLXgy7NYo
+
+
+Review
+
+1. Indexes ar critical to performace
+2. Explain
+3. Hint
+4. Profiling
+
+**Mongotop**
+
+Lets run mongotop every 3 seconds
+
+```
+mongotop 3
+2018-02-10T19:55:59.787+0000    connected to: 127.0.0.1
+
+                  ns    total    read    write    2018-02-10T19:56:02Z
+  admin.system.roles      0ms     0ms      0ms                        
+admin.system.version      0ms     0ms      0ms                        
+crunchbase.companies      0ms     0ms      0ms                        
+       grades.grades      0ms     0ms      0ms                        
+        grades.skill      0ms     0ms      0ms                        
+
+```
+
+
+Let's review what we've learned so far.
+We've learned that indexes are critical to performance inside
+a database and inside MongoDB.
+We learned how to use the Explain command to look at
+what the database is doing for any particular query in terms
+of how it's using its indexes.
+We've learned how to use the Hint command to instruct the
+database to use a particular index for a query.
+And we've learned how to turn on profiling and look at the
+profiling information to figure out which of our
+queries are slow so that we can use the Explain command,
+possibly use the Hint command, possibly create new indexes.
+But if I want to look at the high level inside a program
+and figure out what it's doing, how would I do that?
+Now, we have some tools to do that.
+And I'm going to show those to you next.
+The first one I'd like to show you is Mongtop .
+Now, Mongtop is named after the Unix Top command.
+It's going to give you a high level view of where Mongo is
+spending its time.
+And to show you how that could be interesting, let me bring
+you through two programs that I wrote.
+The first program I call stress_students.
+Now stress_students, which is right here, is a small program
+that connects to the database and is going to look up a
+million student records in my students collection.
+My students collection has no index, and this
+is going to be slow.
+So let's run that.
+Now here it is, chugging through these different
+student records.
+It looks like it's talking almost a second per record.
+And then in this window, I'm going to run Mongtop.
+And I'll run it every three seconds--
+mongotop 3.
+Anyway, let's look at that output together.
+I'm going to stop it.
+Now what it's saying is that-- and I'm not sure exactly why
+it's above three seconds when the sampling
+interval's three seconds--
+but it's saying that all the time is spent in the students
+collection.
+You'll notice this a row for each collection that it's
+looking at.
+And this is great because at a high level, if I've got lots
+of collections, I want to know where the thing's
+spending its time.
+And then it's telling me my read time and my write time.
+And it's very clearly dominated by time spent
+reading in the students collection.
+So that tells me that that's were I should look, right?
+And I have profiling turned on, if I went to the profiler,
+I would find there's a lot of slow queries and that I could
+work on this right off the bat.
+So let's look at a different program which should be
+running much more efficiently because it uses indexes and
+see what results we get there.
+So I'm going to go back here.
+I'm going to stop this program.
+And now, I'm going to show you a very similar program called
+stress_students2.py.
+Now, this connects to my school2 database, and there's
+another students collection in there which also has 10
+million records.
+But they're broken up slightly differently by class and
+student id, and so as a result, I have to loop.
+But every one of these queries that looks up a student by its
+class id is going to hit an index because I have a
+student_id, class_id index on that in that collection.
+And it's nicely selective, and their student
+id is right in there.
+So we should expect to get good
+performance from this program.
+And let's see what the results are when we run it.
+Well, I mean the first thing you note is that it's just
+flying by, so you could just feel that it's running a lot
+more quickly through the database.
+But now I'm going to just run Mongtop for three seconds and
+see what it says.
+And it says that in the interval, 850 milliseconds of
+the three seconds, the 3000 milliseconds, are spent in the
+school2.students collection, and it's all on read.
+But that's only a small fraction of the sampling
+interval of three seconds.
+And what that would leave me to believe is that this thing
+is not even bound by its performance through Mongo.
+And if I look at the activity monitor on my Mac-- and this
+is probably a little small for you to see--
+you can see that there's as much time spent in Python as
+there is in Mongo.
+Because of all the I/O and the loops in there, it's accessing
+Mongo very quickly.
+And this would tell me that this program is actually
+performing pretty well.
+Now if I went and looked in the profiling logs, I wouldn't
+see any slow queries because there really aren't any for
+this particular program.
+So that is Mongtop.
+
