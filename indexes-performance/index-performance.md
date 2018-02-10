@@ -3966,7 +3966,220 @@ returned if all of these documents
 are in the collection?
 
 
+---
+
+### Efficiency of Index Use
+
+https://youtu.be/JJmIf0pn100
+
+**Designing/Using Indexes**
+
+* Goal: Efficient Read/Write operations
+* Selectivity - minimize records scanned
+* Other ops - How are sorts handled?
+
+In this query
+
+```
+db.studends.find({studend_id: {$gt:500000}, class_id:54}).sort({studend_id:1}).explain("executionStats");
+
+"nReturned" : 10118,
+"executionTimeMills" : 2900,
+"totalKeysExamined" : 850433,
+"totalDocsExamined" : 10118,
+
+"rejectedPlans" : 
+{
+"stage" : "SORT",
+"sortPattern" : { "student_id":1 }
+//This means that mongodb was unable to sort data in db, and would have to do the sorting in memory (a lot of time in this phase)
+}
+```
+
+**Mongo provides a way to overwrite the winning plan**
+
+```
+hint()
+
+db.studends.find({studend_id: {$gt:500000}, class_id:54}).sort({studend_id:1}).hint({class_id:1}).explain("executionStats");
+
+"nReturned" : 10118,
+"executionTimeMills" : 79,
+"totalKeysExamined" : 20071,
+"totalDocsExamined" : 20071,
+
+"rejectedPlans" : 
+{
+"stage" : "SORT",
+"sortPattern" : { "student_id":1 }
+//This means that mongodb was unable to sort data in db, and would have to do the sorting in memory (a lot of time in this phase)
+}
+```
 
 
-
-
+okay so at this point we know quite a
+bit about what types of indexes MongoDB
+supports how to create indexes and the
+importance of indexes for the efficiency
+of our application what I'd like to do
+now is walk through an example that
+gives you an idea of the type of
+thinking you need to do when you're
+designing your indexes the goal is that
+our read and write operations are as
+efficient as possible but as with so
+many things this requires some upfront
+thinking and some experimentation to be
+sure you get the right indexes in place
+what you really want to do is test your
+indexes under some real-world workloads
+and make adjustments from there but
+that's outside the scope of this course
+what we're going to look at here is some
+of the initial thinking you can do to
+get ready for some of that real-world
+testing so what we're going for here is
+a selectivity of our index and to what
+degree for a given query pattern the
+index is going to minimize the number of
+records scanned and we have to consider
+this in a scope of all operations to
+satisfy a query and sometimes make some
+trade-offs so we'll have to consider for
+example how sorts are handled okay so
+let's go through our example and again
+this is really the tip of the iceberg in
+terms of designing a set of indexes but
+it gives you an idea for the type of
+thinking you're going to have to do in
+order to get those indexes right so to
+think about building indexes that can
+handle our query patterns efficiently
+let's return to our student data set now
+in this version of the data set I've
+added a field for final grade and we're
+dealing with about 1 million students so
+here's the query that I want to look at
+and the reason for this is because it
+illustrates several of the issues that
+we have to think about in designing our
+indexes so note that what we're doing
+here is a query for all students with an
+ID greater than 500,000 okay so that's
+going to be about half the students and
+records for the class 54 there's about
+500 classes represented in here and then
+finally we're going to sort in ascending
+order on student ID the same field we're
+querying on here now throughout this
+example I'm going to be running explain
+on the cursor that the query returns to
+us and specifying that I want to see
+execution stats so that we get nice
+detailed output about exactly what
+MongoDB did in order to satisfy the
+query so let's run this okay
+I want to draw your attention to a
+couple of different things so first
+let's take a look at this total Keys
+examined this is how many keys within
+the index I'm going to be walked through
+in order to generate the result set the
+result set on the other hand is only ten
+thousand documents so we had to look at
+a lot more index keys then we really
+needed to in order to find the documents
+what this means is that the index that
+was used in order to satisfy this query
+wasn't very selective and you remember
+that selectivity is one of our key goals
+when we're designing an index so let's
+see if we can figure out what happened
+okay now when you move above execution
+stats in the explain output the thing
+you're going to see is the output from
+the query planner so starting from the
+top working your way down you've got a
+winning plan and then you also get a
+chance to see the rejected plans so this
+is in JSON form a specific outcome for
+this idea here racing a couple of
+different query plans against one
+another okay so what happened here is
+that the winning plan used a compound
+index based on student ID and class ID
+and the losing plan there's only one
+other would have used an index based on
+class ID but then it would have had to
+do an in-memory sort that's what this
+component of this particular query plan
+means anytime you see a sort stage in a
+query plan it means that MongoDB was or
+would have been unable to sort the
+results that according to the sort
+specified by the query in the database
+itself rather it would have had to do an
+in-memory sort so what happened here is
+that the index that one is one that was
+able to return sorted output so it only
+had to get to that certain threshold
+number of return results which is I
+believe 101 return documents versus if
+you remember ten thousand documents
+would have to have been returned by any
+query plan that was unable to do a sort
+within the database okay because we
+actually were able to identify ten
+thousand documents that match the query
+parameters stipulated here again the
+issue is one of selectivity and the
+problem here is that we're specifying
+range query that just isn't very
+selective and so we end up touching
+every single key in this index that has
+a student ID value greater than
+five hundred thousand so that's about
+half of the records here now I'm sure
+you can see where I'm headed here it's
+this query the point query that's going
+to be considerably more selective for us
+okay so as I said there's only about 500
+classes represented in this data set and
+now granted there's lots of students
+taking those classes but this is going
+to constrain a result set and this is
+really what leads to those 10,000
+records being returned as opposed to the
+850,000 that were identified so it would
+be better given the indexes we have is
+if in fact we use this particular index
+because this is going to be
+substantially more selective so let's do
+that now I'm going to be does provide a
+way of forcing the database to use a
+particular index I can't stress strongly
+enough that you should use this with
+caution it's not something you should
+necessarily make part of your deployment
+but it is a way of overriding what would
+be the outcome of a query planner so
+that is called hint okay and with hint
+we can specify a particular index that
+we'd like to use either by specifying
+its shape or its actual name in this
+case I'm just going to specify its shape
+and what I'm going to do here is I'm
+going to say okay I want to use the
+class ID index okay so let's see what
+happened with this query okay we're now
+down from having scanned 850,000 index
+keys to just about 20,000 in order to
+get to our results set of 10,000 okay
+and the execution time is only 79
+milliseconds as opposed to the 26
+hundred milliseconds we saw before using
+the other index okay now the fact is
+what we'd really like to see is that an
+returned is in fact very close to total
+Keys examined so one way of addressing
+this is to design a better index
