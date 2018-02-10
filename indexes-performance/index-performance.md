@@ -4733,3 +4733,275 @@ see any slow queries because there really aren't any for
 this particular program.
 So that is Mongtop.
 
+---
+
+### Mongostat
+
+
+https://youtu.be/E2aDTSes3Wc
+
+```
+$ mongostat
+insert query update delete getmore command % dirty % used flushes vsize   res qr|qw ar|aw netIn netOut conn                 time
+    *0    *0     *0     *0       0     1|0     0.0    0.0       0  274M 55.0M   0|0   0|0   79b  21.5k    2 2018-02-10T20:01:49Z
+    *0    *0     *0     *0       0     1|0     0.0    0.0       0  274M 55.0M   0|0   0|0   79b  21.5k    2 2018-02-10T20:01:50Z
+    *0    *0     *0     *0       0     1|0     0.0    0.0       0  274M 55.0M   0|0   0|0   79b  21.5k    2 2018-02-10T20:01:51Z
+    *0    *0     *0     *0       0     1|0     0.0    0.0       0  274M 55.0M   0|0   0|0   79b  21.5k    2 2018-02-10T20:01:52Z
+    *0    *0     *0     *0       0     1|0     0.0    0.0       0  274M 55.0M   0|0   0|0   79b  21.5k    2 2018-02-10T20:01:53Z
+```
+
+now I'd like to tell you about the Mongo
+stat command the mongoose TAC command is
+a performance tuning command and it is
+somewhat similar to the i/o stat command
+from the UNIX world if you're familiar
+with that what it will do is it will
+sample the database in one second
+increments and give you a bunch of
+information about what is going on
+during that one second for instance
+it'll give you the number of inserts
+queries updates and deletes it'll also
+give you different information depending
+on whether you're running wired tiger or
+a map v1 as a storage engine so let's
+take a look at Mongo stat in a running
+database now I've got both storage
+engines currently running on this
+computer both wired tiger and a map v1
+and I'm currently creating the student
+collection which is a million students
+ten classes for each student's so 10
+million documents and that's going on in
+parallel for both the wired tiger and
+the map view on storage engine two
+different Mongo DS and one of them is
+running at 27 0 17 and the other ones
+running a 27-0 18 so if I wanted to see
+how it's going i could run Mongo use the
+school database and then count the
+number of students that are currently
+here and we can see it is about 850,000
+in this one and if I wanted to see how
+what's going on on the wire Tiger 1
+which is running a 27-0 18 I could do
+that as well and you can see there are
+seven hundred ninety three thousand
+students in that one and every time I
+run it that number will be a little bit
+higher because it's actually running a
+script in the background now if you want
+to look at this and see what's happening
+I can run Mongo stat and I'll run it or
+without a port number which will run it
+against 2701 7 and if I do that you can
+see a bunch of data and unfortunately
+it's wrapping on the screen so it's a
+little hard to read but you can see the
+number of inserts queries updates and
+deletes and you can see that for the 20
+70 17 server which is a default port
+server I'm running about 4,000 inserts
+every second and there's a bunch of
+other information here that will go over
+in a moment
+now if I want to then look at the other
+storage engine I could do that and you
+can see that that's also running about
+4,000 inserts per second now let's
+stress it just a little bit further so
+it's running this large insert script
+that's can insert all these different
+student records but now let's also run
+this so I've written a small script
+called stress students py and it doesn't
+do much what it does is it goes through
+and looks in the range of 400,000 to
+500,000 and it tries to look up the
+student by student ID and there is an
+index on student ID for this collection
+on both storage engines and every
+thousand so it just says I did a
+thousand searches so let's run that and
+while we're running that lets go back
+and now once again let's run my own
+ghost at and now we see the results are
+slightly different we can see that not
+only are we doing some inserts and
+actually the insert rate has now gone
+down to about 3,000 per second but we're
+also doing a bunch of queries we're
+doing about three or four thousand
+queries per second so you can see how
+this data changes depending on the
+workload of the database alright so
+let's go over a few more of these
+different columns and talk about what
+they do I'm not going to go through all
+of them insert query update and delete
+are just these different query
+operations and deletions and those are
+pretty obvious get more is how many get
+more commands we're running every second
+get more is the way you get more from a
+cursor if you're doing a query that has
+a large result alright this is the
+number of commands that are running per
+second things like create index and get
+indexes these are commands I'm not going
+to talk about flushes it has to do with
+the number of times that it flushes out
+to disk per second I'm not going to talk
+too much about it map does the is the
+amount of mapped memory that exists in
+the end map view one storage engine you
+can see we're mapping a lot of memory
+but you can see that we only have about
+four point two gigabytes resident this
+is a number of page faults that were
+causing every second and that's an
+important number in EM map v1 because
+page faults mean that you're getting
+more I oh and more I oh
+means a slower database all right now
+finally this right here and these are
+all wrapped it's hard to read these but
+these are the queue lengths for a number
+of sockets I believe that are waiting or
+requests that are waiting in for Reed
+and for right and this is the number of
+active readers and active writers and
+then this is the amount that was sent
+into the database and add a database
+during this time frame now let's run my
+own ghost at for the wire tiger storage
+engine and look at the differences now
+again wire tiger is running at 27 0 18
+port so let me connect to it there now
+you can see for the wired Tigers droid
+engine I'm not seeing any queries
+because I'm not running that stress test
+against the wire tiger storage engine if
+I wanted to change that and run it
+against the wire tiger stored engine I
+could do that let's change that stress
+test py to connect to 27 0 18 and now
+let's run that so then we're going to
+run that and then while we're running
+that we're going to run our Mongo stat
+against 27 0 18 let's do that great
+alright so I'll let that run a little
+bit then I'll stop it alright the first
+thing you notice is that the wired tiger
+storage engine is actually managing a
+few more reads we're getting reads in
+the 5000 range per second while we're
+still doing about 4000 inserts per
+second so we're seeing better
+performance out of the wire tiger
+storage engine this is not the best
+performance test I've got two different
+Mongo d servers running on the same box
+but it is interesting Staten nonetheless
+now you'll notice here that we still
+have this get more column and we have
+this command column but then we have a
+bunch of different columns first of all
+the M map column is gone because we're
+not mapping memory anymore instead we
+have the percentage dirty and the
+percentage used and this refers to the
+percentage of the wired tiger cash that
+is dirty meaning that it's written and
+only to be written back to disk if we
+want to reuse the space and the
+percentage used is the percentage of
+total cache size that we're using and
+you can see that that's ten percent and
+that very little of this caches is dirty
+and then we can see that we have about
+1.6 gigabyte resident in the storage
+engine and then the queue lengths are
+again very close to zero and the active
+clients are it says one maybe two is
+Mongo start attaching
+I'm not sure or potentially maybe that's
+our stress test actually it could be our
+stress test connecting to it now let's
+see in terms of the residents eyes I'm
+just going to go back and see what this
+was the residents eyes before an nmap
+was four point two gigs and the
+residents eyes here was 1.6 gig so it
+looks like the residents eyes is a lot
+smaller on wire tiger all right that
+gives you sort of a taste of what these
+stats are now obviously you're most
+interested in the stats that indicate
+both the usage of a database and also
+how much I oh you're doing and for the
+MF v one storage engine number of page
+faults is a pretty good indicator of the
+amount of i/o you're doing of course you
+can also find that out from iostat and
+for the wire tigard storage engine I
+don't see anything that's a clear
+indicator of the amount of i/o you're
+doing although you can tell by the
+percentage of your cash that you're
+using how close you are to to seeing
+some pressure on that cash obviously if
+you're not using the whole cash probably
+not seeing very much pressure at all on
+its size now if you want to find out
+more about Mongo stat course the best
+way to do that is by looking in the
+manual and right here I'm just googling
+Mongo stat MongoDB and if I look here
+the first link tells me all about Mongo
+stat and what's a little bit small here
+these are the command line options to
+run it I'm not going to get into that
+and then finally at the bottom we've got
+the fields which pretty much follow
+along with what I just talked about
+telling you the number of inserts
+queries updates per second that are
+happening and then explaining some of
+the more esoteric ones and which ones
+also exist only for wire tiger or what
+they mean in wire tiger vs in EM map so
+for instance flushes has a different
+meaning and wire tiger vs at map dirty
+as I said is a wire tiger only term it's
+about percentage of the cash that's
+dirty mapped is an MF v one storage term
+size is actually I didn't see a size
+output i saw a V size output which I
+haven't talked about documentation seems
+to be slightly off with respect to this
+column and I filed a ticket so you might
+see this has changed or more clear when
+you watch this video resident is the
+amount of resident memory used in both
+cases and false of course is a map v1
+concept alright
+so those are the major parts of the
+Mongo staff command and you know you
+should use the longest at command if
+you're curious you know what the
+database is doing so that's Mongo stat
+okay now it's time for a quiz on Mongo
+stat which of the following statements
+about Mongo stat output are true check
+all that apply the m map column field
+appears for all storage engines the get
+more column concerns number of requests
+per time interval to get additional data
+from a cursor only the wire tiger
+storage engine reports the resident
+memory size of the database the false
+column appears only in the M map v1
+output and by default Mongo stat
+provides information in 100 millisecond
+increments
