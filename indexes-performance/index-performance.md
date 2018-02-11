@@ -5005,3 +5005,109 @@ column appears only in the M map v1
 output and by default Mongo stat
 provides information in 100 millisecond
 increments
+
+
+---
+
+### m101 38 sharding
+
+https://youtu.be/BDxT-VZdYqc
+
+All right, the last topic of this unit is sharding.
+And sharding is a technique for splitting up a large
+collection amongst multiple servers.
+So so far we've been talking about having a single Mongo
+server, which I'll represent as this disk.
+But there comes a time when you can't get the performance
+you want from a single server.
+And so what you can do is you can shard.
+And when you shard, you deploy multiple mongod servers, and
+in the front, you have a mongos which is a router.
+And your application talks to mongos, which then talks to
+the various servers, the mongods.
+Now one wrinkle, which I won't go into here, is that rather
+than being a single server, this is sometimes and often
+and recommend to be a set of servers.
+So imagine three of these guys behind here in what's called a
+replica set.
+And a replica set keeps the data in sync across several
+different instances so that if one of them goes down, you
+won't lose your data.
+But logically, you can look at this replica set as one shard.
+And when you're doing this-- and for the most part, it's
+transparent to the application--
+however, the way Mongo shards is that you
+choose a shard key.
+So for instance, in that student collection, you might
+decide that student_id is your shard key.
+Or it could be a compound key.
+And the mongos server, it's a range-based system.
+So based on the student-id that you query, it'll send the
+request to the right Mongo instance.
+So what do you really have to need to know as a developer?
+Well the, first thing you need to know is that an insert must
+include the shard key, the entire shard key.
+So if it's a multi-parted shard key, you must include
+the entire shard key in order for the insert to complete.
+So you have to be aware of what the shard key is on the
+collection itself.
+And the second thing you need to know is that for an update
+or a remove or a find, if mongos isn't given a shard
+key, then what it's going to have to do is broadcast the
+request to all the different shards that cover the
+collection.
+So you have some collection, like the students collection,
+and it's broken up into big parts that map each to
+different shards--
+shard0, shard1.
+And then there's some chunking within here to allow Mongo to
+keep it balanced, but that doesn't really matter from
+your standpoint.
+The point is that if it doesn't know the shard key, on
+the query, it has to broadcast it.
+Now, it may be the case that you're doing a query that you
+don't know the shard key, in which case it
+does have to be broadcast.
+And that's fine.
+But if you know the shard key, you should specify it because
+you will get better performance because you'll
+only be utilizing one of the servers.
+And you won't be keep the other servers busy with this
+query as well.
+A couple of other subtleties--
+with updates, if you don't specify the entire shard key,
+you have to make it a multi-update so that it knows
+that it needs to broadcast it.
+And we're going to go over a lot of this in the application
+engineering part of the course.
+But I just wanted to explain the role that sharding has on
+performance and also the subtlety of having to think
+about the shard key a bit.
+And choosing a shard key is a topic in and of itself, which
+we are not going to go over.
+Now within each of these servers, all these instances,
+the same techniques apply as we have been talking about
+this entire unit.
+So you could certainly use Explain.
+You can look at the system profile.
+You can connect directly to the Mongo instances that are
+running on here if you'd like for debugging purposes.
+So a lot of the same things apply.
+But at the highest level, your application will be talking to
+a mongos router.
+And that mongos will be talking to the mongods,
+usually on different physical servers because that's
+probably the reason why you sharded in the first place was
+to get higher performance.
+And just in case you were wondering, mongos is often
+co-located on the same machine as the application, and you
+can have multiple of these mongos services.
+And you may have noticed the mongos binary in the Mongo
+distribution, and that's what it is.
+It lets you shard a collection and split it across multiple
+servers and access it pretty easily--
+somewhat transparently, except you have to have some
+understanding of the shard key.
+All right, so that completes our unit on performance.
+I hope you've enjoyed it, and I'll see you next week.
+
