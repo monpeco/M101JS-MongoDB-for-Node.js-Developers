@@ -328,3 +328,284 @@ projection within an aggregation
 framework operations that allow us to
 perform arithmetic do string
 concatenation work with dates etc
+
+
+
+---
+
+### Expressions overview
+
+https://youtu.be/n1-buqH9sUU
+
+[Aggregation Pipeline Quick Reference](https://docs.mongodb.com/manual/meta/aggregation-quick-reference/)
+
+okay so before we go any further I want
+to talk a little bit about the use of
+expressions in aggregation pipelines if
+we take a look at the MongoDB
+documentation and review the aggregation
+pipeline quick reference we can see an
+overview of all of the stages for the
+aggregation pipeline as well as a
+summary of the various types of
+expressions that are available so in
+general I want to point you to the
+aggregation pipeline quick reference as
+your go-to for any questions you have
+about the details of any aspect of the
+aggregation pipeline what I'd like to do
+in this lesson is review the various
+types of expressions that are available
+so if we scroll down to the expressions
+section we have an overview of some of
+the different features of expressions
+which will dive into in subsequent
+lessons but scrolling down we can see
+the different classes of expressions
+that are supported in the aggregation
+framework so there are boolean
+expressions that allow us to and or and
+not other expressions we have set
+expressions allowing us to work with
+arrays but treating those arrays as sets
+if you're familiar with the concept of a
+set from mathematics in particular we
+can get the intersection or union of two
+or more sets or the difference of two
+different sets as well as perform a
+number of other set operations there are
+also comparison operations these should
+be familiar to you comparison operations
+allow us to do things like range queries
+or in the case of the aggregation
+framework range filters there are a
+variety of arithmetic expressions many
+of which were introduced in MongoDB 32
+will touch on a number of these in a
+later lesson but you can see that we can
+calculate the ceiling the floor natural
+log and log as well as simple arithmetic
+operations like division and addition
+multiplication and subtraction we can
+even do things like calculate the square
+root of a value there are string
+expressions allowing us to do things
+like concatenation or taking the
+substring and operations having to do
+with case text search expressions array
+expressions that provide a lot of power
+for how we work with arrays including
+filtering array elements calculating the
+size and slicing an array or just taking
+a range of values from a specific array
+there are variable expressions which we
+won't dive into too deeply and
+expressions that allow us to work with
+literals date expressions for parsing
+date values
+and conditional expressions so pretty
+cool stuff we can do here finally there
+are a whole host of accumulators and
+that wraps it up for our quick overview
+of the different types of expressions
+that are available we will dive into
+many of these with a variety of examples
+in subsequent lessons and again just a
+reminder if you have questions about the
+syntax or specific details about
+anything having to do with the
+aggregation framework I strongly
+encourage you to use the aggregation
+pipeline quick reference as your
+starting point for addressing those
+questions
+
+
+---
+
+
+
+### Project introduction to reshaping
+
+https://youtu.be/csy5ERC3ifw
+
+- Promoting nested fields
+
+okay now I'd like to take a deeper dive
+into project stages within aggregation
+pipelines and what I'd like to look at
+is an introduction to reshaping what I'm
+going to try to touch on here are the
+types of reshaping operations that
+should be most common in the
+applications that you develop so we've
+seen some simple projections in
+aggregation pipelines now let's look at
+some that are a little bit more complex
+these are an example of what I like to
+think of as promoting nested fields
+let's dive into this example so you can
+see what I mean so here we're doing a
+match so imagine that you're running a
+report or responding to a query to your
+website or you have an application that
+is fielding a query to your website and
+what you're looking for are all
+companies where Greylock partners
+participated in some round of funding
+okay so by participated we simply mean
+that Greylock partners invested in the
+company so just a quick refresher within
+company documents we have a funding
+rounds field that has as its value an
+array and within that array each element
+is a document that summarizes a round of
+funding including the raised amount and
+the year in which the funding round
+occurred there's also an investments
+field that investments field lists the
+organizations and individuals that
+participated in a given round of funding
+so going back to our match we're looking
+at the funding rounds field the
+investments field contained by all
+documents in the funding rounds array
+and within each element of the
+investments array we're going to look
+for the permalink value of a financial
+org nested document and only retrieve
+documents where this permalink field
+matches the string Greylock so taking a
+look again here's an example we're
+matching against elements of the funding
+rounds array this is one investments
+financial org and finally permalink and
+we're looking for Greylock as the value
+of this field okay so using dot notation
+we have driven down into the financial
+org document for each investor now what
+we're going to do in terms of output is
+for project again we're going to
+suppress the underscore ID and include
+the name but we're also going to promote
+some nested fields here so we're going
+to dive into the IPO field and the
+funding rounds field and take values
+from those nested documents and array
+is and make them top level values in the
+documents that we produce as output from
+this aggregation pipeline let's run this
+once so you can see what I mean so
+running this each document has a field
+for name it also has a field for funders
+and for those companies that actually
+have gone through an IPO there is an IPO
+year and valuation note that in all of
+these documents these are top-level
+fields and the values are associated
+with those top-level fields these are
+values that we given our project
+statement promoted from nested documents
+and arrays this is actually similar to
+what you might see in a linux shell like
+bash if we specify a dollar inside
+quotes then MongoDB interprets this as
+give me the value identified by this key
+the dollar means give me the value so
+we're saying find the IPO nested
+document and the pub your value of that
+nested document and assign that as the
+value for the IPO key in all output
+documents we do something very similar
+for valuation what we're doing here for
+funders is essentially the same thing
+it's just that we have to drive a lot
+deeper into our document to go all the
+way down to the permalink for the
+financial org within the investments
+array which is a subfield of each
+element in the funding rounds array and
+pulling out the funders now one thing
+you might have noticed is that we're
+seeing multiple values print it out for
+funders in fact we're seeing an array of
+arrays the reason for that is because
+for every funding round we're going to
+get potentially many investors is that
+we know that funding rounds are
+represented by an array and we know that
+all of the funders are contained within
+an array called investments so what's
+happening here is the aggregation
+framework knows that we want to see the
+financial org dot permalink value for
+each entry in the investments array for
+every funding round but because we're
+only specifying that we want to see this
+one value rather than print out this
+entire document or anything else here
+we're simply including this value for
+every entry in investments for every
+funding round so an array of arrays is
+built up but that array of arrays is
+composed only of the field values that
+we are explicitly projecting out here if
+we take a look at an IPO document we're
+taking IPO dot pub year an IPO that
+value
+vation amount and for every docket for
+every company that has had an IPO we're
+using those values to construct top
+level fields and our output documents so
+again these are examples of promoting
+nested fields in later lessons we'll see
+how we can perform arithmetic operations
+string operations operations involving
+dates and a number of other types of
+operations to produce documents
+outputted from my project stage of all
+shapes and sizes just about the only
+thing we can't do from a project stage
+relatively speaking is change the data
+type for a value we have lots of power
+in what type of documents we construct
+using a project stage here is where we
+begin to see some hints of that a second
+example i want to show you in this
+lesson is an example of actually
+constructing a new document from values
+in our input document is constructing a
+new nested document from values we
+receive in input documents so in this
+case what we're going to do is take the
+top level values of founded year founded
+month and found a day and create a
+nested document called founded that has
+year month and day fields for every
+document that matches our filter so
+running this we can see that our
+document has the right shape and just to
+be completely clear what we're doing
+we're taking these values here for
+founded year founded month and found a
+day and in our output documents are
+creating a nested document called
+founded essentially aggregating together
+those values for the day on which a
+company was founded into a single nested
+document in our output documents as we
+see here and we can actually see that
+we're missing some values in order to
+get the complete picture so in some ways
+this is going the opposite direction of
+promoting nested fields we're
+essentially creating a nested document
+from some top-level fields so again you
+have a lot of control a lot of power a
+lot of flexibility and how you reshape
+documents using a project stage in the
+aggregation framework
+
+    > db.companies.aggregate([ {$match: {name: "Facebook"} }, {$project: {_id:0, name:1, people: "$relationships.person.last_name"}} ]).pretty()
+    
+---
