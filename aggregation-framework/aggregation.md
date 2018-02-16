@@ -609,3 +609,308 @@ aggregation framework
     > db.companies.aggregate([ {$match: {name: "Facebook"} }, {$project: {_id:0, name:1, people: "$relationships.person.last_name"}} ]).pretty()
     
 ---
+
+
+
+### $unwind
+
+```
+{
+key1 : "value1",
+key2 : "value2",
+key3 : ["elem1",
+	"elem2",
+	"elem3"]
+}
+```
+
+```
+$unwind
+{
+key1 : "value12,
+key2 : "value2",
+key3 : "elem1"
+}
+
+{
+key1 : "value1",
+key2 : "value2",
+key3 : "elem2"
+}
+
+{
+key1 : value1,
+key2 : value2,
+key3 : "elem3"
+}
+```
+Find all greylock and upgrade raised_amount and founded_year
+
+```javascript
+db.companies.aggregate([
+{ $match: {"funding_rounds.investment.financial_org.permalink": "greylock"}},
+{ $unwind: "$funding_rounds" },
+{ $project: {
+    _id: 0,
+    name: 1,
+    amount: "$funding_rounds.raised_amount",
+    year: "$funding_rounds.funded_year"
+} }
+]);
+```
+
+---
+
+### intro to $group
+
+https://youtu.be/6W8GF4X_euo
+
+
+**Group companies by founded year and sort by number of employees**
+
+```
+db.companies.aggregate([
+{ $group: {
+    _id:{founded_year: "$founded_year"}, 
+    average_number_of_employees: {$avg: "$number_of_employees"} 
+} }, 
+{$sort: {average_number_of_employees: -1}} ]);
+```
+
+**List all companies founded on 2001**
+
+```
+db.companies.aggregate([
+{ $match : { founded_year : 2001 } },
+{ $project : {_id:0, name:1, number_of_employees:1} },
+{$sort: {number_of_employees: -1}}
+])
+```
+
+```
+db.companies.aggregate([
+{ $match : { "relationships.person" : { $ne : null } } },
+{ $project : {_id:0, relationships:1} },
+{ $unwind : "$relationships" },
+{ $group: {
+    _id : "$relationships.person", 
+    count: {$sum: 1} 
+} },
+{$sort: {count: -1}}
+])
+```
+
+accumulators are historically the
+province of the group stage and the
+mongodb aggregation framework group is
+actually similar to the sequel group by
+a command so if you're familiar with
+that a lot of the concepts that we're
+going to discuss here should be familiar
+to you in a group stage we can aggregate
+together values from multiple documents
+and perform some type of aggregate
+operation on them such as calculating an
+average let's take a look at an example
+here we're going to use a group stage to
+aggregate together all companies on the
+basis of the year in which they were
+founded we're then going to calculate
+the average number of employees for each
+company so let me run this and then
+we'll return to this call and dig in in
+a little more detail okay so here we can
+see that our output includes documents
+that as their underscore ID have a
+document with founded year and then the
+year in which the company was founded
+and then a report on the average number
+of employees now this is the type of
+thing we might do if we were trying to
+get a handle on say unusually good years
+to found a company or just in general
+we're interested to see what type of
+correlation there was between the year
+in which a company was founded and its
+growth possibly normalizing for how old
+the company is so let's return to the
+command that we ran and dive in a little
+bit more detail as you can see this
+aggregation pipeline has two stages a
+group stage and a sort stage now
+fundamental to the group stage is the
+underscore ID field that we specify as
+part of the document that is the value
+of the dollar group operator itself
+using a very strict interpretation of
+the aggregation framework syntax
+underscore ID is how we define how we
+control how we tune what the group stage
+uses to organize the documents that it
+sees now since the group stage is first
+the aggregate command will pass all
+documents in the company's collection
+through this stage and the stage will
+take every document that has the same
+value for founded year and treat them as
+a single group so in constructing the
+value for this field this expression
+using the average accumulator
+we'll calculate an average of number of
+employees for all documents with the
+same founded year you can think of it
+this way each time the group stage
+encounters a document with a specific
+founded year it adds it to a running sum
+of number of employees and account for
+number of documents seen so far and then
+once all documents have passed through
+the group stage it can then calculate
+the average using that running some and
+count for every grouping of documents it
+identified based on the founded year
+finally here we have a sort stage that's
+simply sorts in reverse order because
+we're using negative one here based on
+average number of employees from the
+documents it is passed from the group
+stage average number of employees being
+the value that we calculated here using
+this average expression so running this
+again and then iterating through
+represented by each one of these
+documents is a calculation based on
+every company that has a founded year
+matching each of these values and as we
+iterate through we see that in fact
+because we've sorted in descending order
+most of the founding years we're seeing
+here initially are from quite some time
+ago or from old companies oh look at
+that so there is actually one from 2001
+which seems a little bit out of place
+given the company it's keeping here with
+a fairly high average number of
+employees especially in comparison to
+other companies founded much earlier so
+one thing we might do in running a
+report like this is actually dive in a
+little bit deeper see what's going on
+with the year 2001 so we can run a
+simple aggregation query matching on
+2001 and what we're going to do here is
+simply project out the number of
+employees for every single company
+there's no grouping or anything going on
+here I just like to have a view into
+what companies were talking about in
+2001 okay so this is why we're seeing
+such a high average because Accenture
+was founded in that year and meta carta
+and both of them have very large numbers
+of employees skewing average a little
+higher than it would be for say other
+years close to that we can see that if
+we do a similar search in the year 2000
+just 18,000 as the highest number of
+employees and you can imagine what
+employee numbers for companies founded
+in other years in the 2000s must look
+like so we've seen one example of an
+accumulator
+that being a group stage using the
+average accumulator let's take a look at
+one other now imagine what you'd like to
+see our people who've been associated
+with a large number of companies if
+you'll remember our company's documents
+contain a field for relationships that
+gives us the ability to dive in and look
+at people who have in one way or another
+been associated with a relatively large
+number of companies now let's take a
+look at this aggregation query in some
+detail first we're matching on
+relationships person and if we quickly
+hop over and take a look at our Facebook
+example document we can see how
+relationships are structured with in
+this document and get a sense for what
+it means to do this essentially we're
+saying I want to take a look at all
+relationships that are not null in fact
+to be more precise here what I should
+really do is change this query so that
+I'm actually comparing relationships
+that person to null so I want to see all
+documents where relationship that person
+is not null okay then here what I'm
+going to do is project out all
+relationships for documents that match
+so I'm just going to take a look at
+relationships for the rest of this
+pipeline then we're going to unwind
+relationships so that every relationship
+in the relationships array comes through
+to the next stage that being a group
+stage as a separate document and then
+finally what i'm doing here is using the
+person so this entire document as my
+underscore ID value on which to group so
+every match to a document for a first
+name last name and permalink for a
+person will be aggregated together and
+in this case rather than using the
+average accumulator i'm going to use the
+sum accumulator and then finally sort
+into descending order before we run this
+though talk about a couple of things
+that are different from the examples
+we've seen so far first we're using the
+sum accumulator and we haven't seen that
+used yet and here also we're
+constructing our ID using an expression
+that's different from the last example
+in another lesson we go into some detail
+about IDs and how you should think about
+them in group stages so let's run this
+and in fact let's make it pretty ok and
+if we scroll up to the first result we
+can see that tim hanlon is the
+individual in this collection that has
+been associated with the most companies
+28
+to be exact okay so returning to our
+query how do we know that well we don't
+in fact what we know is that tim hanlon
+appeared in 28 documents that were
+passed to this group stage but what
+documents were passed through this group
+stage well they were all of the
+relationships for all companies in our
+collection so as you'll note from again
+our example document there's a title
+associated with each person and in fact
+in his past field that tells us whether
+or not this person at the time this
+database was last updated still had that
+title it's entirely possible that
+individuals in these eighteen thousand
+documents here would appear more than
+once in the relationships for a single
+company as they change titles I use this
+example to illustrate a very important
+point about aggregation pipelines make
+sure you fully understand what it is
+you're working with as you do
+calculations particularly when you're
+calculating aggregate values using
+accumulator expressions of some kind in
+this case what we can say is that tim
+hanlon appears 28 times in relationship
+documents throughout the companies in
+our collection we would have to dig a
+little deeper to see exactly how many
+unique companies he was in fact
+associated with and we'll leave that
+calculation as an exercise to you
