@@ -984,3 +984,218 @@ db.companies.aggregate([
         ]
 }
 ```
+
+
+---
+
+### group vs project
+
+https://youtu.be/OIIyqxDPEKE
+
+okay so to round out our discussion of
+the group aggregation stage I'd like to
+look at a couple of additional
+accumulators and call attention to the
+fact that they are not available in the
+project stage just as a means of
+thinking a little bit deeper about what
+we can do in project with respect to
+accumulators and what we can do in group
+so as an example let's take a look at
+this aggregation query so we're doing a
+match on funding rounds finding all
+documents where the array of funding
+rounds is not the empty array and then
+I'm unwinding funding rounds so to sort
+and through these latter stages we will
+see one document for each element of the
+funding rounds array for every company
+so the first thing that I'm going to do
+here is sort the funding rounds using a
+sort stage that actually sorts on first
+year then month then day sorting all of
+these into a sending order so I'll get
+the oldest funding rounds first and the
+rest later and as you're aware from our
+discussion of indexes it's perfectly
+legal to sort by multiple fields and in
+fact supportable in an index by using a
+compound index now once out of the sort
+stage I'll go into a group stage and
+what I'm going to do here is group by
+name now if you understand the way the
+sort works and you should you can see
+that what i'm going to end up doing here
+is constructing a sorted array of
+funding rounds for every company and
+here we're going to use the push
+accumulator in order to build that array
+so let's go ahead and run this and we
+can see as we scan through the output
+here that for companies with multiple
+funding rounds we're seeing a funding
+array composed of just the amount in
+year in sorted order so earlier funding
+rounds occur first in this array we're
+not guaranteed that funding rounds are
+actually listed in sorted order in our
+collection but we can make that happen
+using a sort stage in our aggregation
+query as we did here let's talk just a
+little bit more about push then so what
+we're doing with push is we're
+accumulating and array and the way push
+expressions work is their intended to be
+part of a document specified as the
+value for a field we name in a group
+stage and we can push on any valid
+expression in this case
+I'm pushing on documents to this array
+and for every document that I push it's
+being added to the end of the array that
+I'm accumulating in this case I'm
+pushing on documents that are built from
+the raised amount for each funding round
+and the year so what i end up with
+coming out of this group stage is a
+stream of documents that have another
+square ID where we're specifying the
+company name so these will be the
+funding rounds aggregated together for
+each company and then a funding field
+that has as its value because we're
+using a push expression here an array of
+documents that represent each funding
+round albeit in a very summery fashion
+now dollar push is an accumulator that's
+available in group stages but not in
+project stages the reason for that is
+because group stages are designed to
+take a sequence of documents and
+accumulate values based on that stream
+of documents project on the other hand
+works with one document at a time so i
+can calculate an average on an array
+within an individual document inside a
+project stage but doing something like
+this where one at a time I'm seeing
+documents and for every document that
+passes through the group stage pushing
+on a new value well that's something
+that the project stage is just not
+designed to do for that type of
+operation we want to use group and it's
+important to understand the distinction
+especially because in MongoDB 32 we
+introduced the use of a subset of the
+accumulators available in the group
+stage for use in the project stage okay
+let's take a look at one other example
+now this is a long one so bare with me
+but it builds on the previous one so it
+shouldn't be too difficult for us to get
+through again we're unwinding find
+funding rounds sorting in the same way
+but in this case instead of accumulating
+an array of summary funding rounds what
+we're doing instead is using two
+accumulators we've not looked at yet one
+called first and one called last we have
+talked about them a little bit when we
+were introducing accumulators first
+expressions will simply take the first
+value that passes through in the stream
+of documents passed to a group stage and
+make that the value that is maintained
+for whatever key its associated with
+similarly with last last simply pays
+attention to all of the values that come
+through the group stage and just hangs
+onto the last one making that the value
+for again whatever key its associated
+with right so you can see again that
+adds with push we can't use first and
+last in project stages because again
+project stages are not designed to
+accumulate values based on multiple
+documents streaming through them rather
+they're designed to reshape documents
+one at a time as those documents pass
+through okay and then finally we're
+going to calculate a total number of
+rounds using a sum expression and for
+this sum expression we're just
+specifying the value one well what does
+that mean well as some expression like
+this simply serves to count the number
+of documents it sees that group together
+with each document that matches or is
+grouped under a given underscore ID
+value and then finally I have a fairly
+complex project stage here but all I'm
+really doing is making my output
+prettier okay so rather than have a
+first-round value the entire document
+for the first funding round I saw or the
+four last round the entire last poor
+funding round I'm creating a summary
+okay rather than just generated an
+underscore ID I'm actually saying okay
+and note that this maintains good
+semantics because I'm labeling the value
+here so company for company I'm going to
+use the value that passes through as the
+underscore ID company value here for
+first round I'm going to produce it a
+much smaller document that maintains the
+essential details of amount article and
+year pulling those values from the big
+funding round document that will be the
+value of first round for each document
+that passes through this project stage
+and I'm doing something similar for last
+round here and then finally I'm just
+saying yes go ahead and include num
+rounds and total raised from the
+previous document and you know what I
+didn't talk about total raised okay let
+me do that briefly it's interesting to
+consider these two some expressions in
+comparison to one another because in
+this form of some I'm simply counting
+because i'm using this literal one value
+i could use a three i could count by
+fives i could count by tens in this case
+I'm just counting by ones in this case
+I'm actually summing up all of the
+funding rounds so that i get a total
+raised value for some expressions i can
+supply an expression that's a literal or
+something that'd value
+waits to a numeric value that I can then
+some okay so let's run this we can see
+that what I get out is as described in
+this case there was just one funding
+rounds for the first round of the last
+round are identical but if we scroll up
+it's easy to find a company for which
+there were actually 13 rounds of funding
+and you can see that the first round was
+substantially smaller than the second
+round you can also see that i forgot to
+exclude the underscore ID value in the
+project stage of my aggregation pipeline
+so in order to do that I would need to
+explicitly exclude it in my project
+stage running it again we can see that
+in fact company now comes through as
+desired but we have successfully
+excluded the underscore ID value so that
+pretty much wraps up our discussion of
+group we've covered a number of
+different accumulators some that are
+available and project and we've also
+discussed how to think about when to use
+group versus project when considering
+various accumulators
+
