@@ -914,3 +914,73 @@ little deeper to see exactly how many
 unique companies he was in fact
 associated with and we'll leave that
 calculation as an exercise to you
+
+
+
+
+
+**Construct an _id without label**
+
+```
+db.companies.aggregate([
+{ $match : { founded_year : { $gte: 2010 } } },
+{ $group: {
+    _id : "$founded_year", 
+    companies: {$push: "$name"} 
+} },
+{$sort: {"_id.founded_year": 1}}
+])
+
+{
+        "_id" : 2013,
+        "companies" : [
+                "Fixya",
+                "Wamba",
+                "Advaliant",
+                "Fluc",
+                "iBazar",
+                "Gimigo",
+                "SEOGroup",
+                "Clowdy",
+                "WhosCall",
+                "Pikk",
+                "Tongxue",
+                "Shopseen",
+                "VistaGen Therapeutics"
+        ]
+}
+```
+
+**Construct an _id labeled**
+
+```
+db.companies.aggregate([
+{ $match : { founded_year : { $gte: 2010 } } },
+{ $group: {
+    _id : { founded_year : "$founded_year"}, 
+    companies: {$push: "$name"} 
+} },
+{$sort: {"_id.founded_year": 1}}
+])
+
+{
+        "_id" : {
+                "founded_year" : 2013
+        },
+        "companies" : [
+                "Fixya",
+                "Wamba",
+                "Advaliant",
+                "Fluc",
+                "iBazar",
+                "Gimigo",
+                "SEOGroup",
+                "Clowdy",
+                "WhosCall",
+                "Pikk",
+                "Tongxue",
+                "Shopseen",
+                "VistaGen Therapeutics"
+        ]
+}
+```
