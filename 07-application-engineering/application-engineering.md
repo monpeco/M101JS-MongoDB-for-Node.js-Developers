@@ -1072,3 +1072,353 @@ https://youtu.be/K5ISnvYKQFQ
 One thing to remember is that the driver will check, upon attempting to write, whether or not its write concern is valid. It will error if, for example, w=4 but there are 3 data-bearing replica set members. This will happen quickly in both the Java and pymongo drivers. Reading with an invalid readPreference will take longer, but will also result in an error. Be aware, though, that this behavior can vary a little between drivers and between versions.
 
 ---
+
+### m101 29 intro to sharding
+
+https://youtu.be/_GfDqa1qRl0
+
+---
+
+### Building a Sharded Environment
+
+https://youtu.be/dn45G2yw20A
+
+in this lesson we're going to go over
+how to build a shorted environment this
+is not the type of thing you typically
+do as a developer it's probably more of
+a DBA task but if you want to practice
+with sharding and set up a shorted
+environment on your own pc or your own
+laptop then it's convenient and how to
+do it and we're going to give you some
+scripts to do it so it isn't as
+difficult as it first seems so we're
+going to build a short environment with
+three shards and the each of these
+shards is going to be a replica set with
+three nodes so there's going to be three
+Mongo denotes on each of these little
+M's in them and on these three shards
+which will label s0 s1 and s2 this is
+where your data will live and your
+application right here your app will go
+through a router called a Mongo s router
+is your Mongo s and you can have more
+than one of these but in our example
+we're just going to have one and it's
+not unusual the way we're going to do it
+is to have Mongo s listen on a standard
+port 20 70 17 and then since we're going
+to be setting this up all in the same
+computer we're going to be reusing a lot
+of port numbers so we're going to have
+these Mongo DS listen on non-standard
+ports so they can communicate now each
+of these is a replica set so this is a
+replica set right here and this is a
+replica set and this is a replica set
+now I'm sorry from these servers you're
+also going to need some config servers
+now the config servers typically you
+have three of them although you can have
+as few as one and we're going to show
+you three because it's a standard way to
+do it and each of these config servers
+holds the information about the way your
+data is distributed across these shards
+so let's say you have a large collection
+of people let's say millions of people
+that are members of your website and
+there's a user ID you could decide that
+you want a certain user to live on a
+certain shard you can take the users
+collection and you can shard it across
+these different servers now the way it
+works is that there's this concept of a
+chunk in sharding and the chunk of data
+which holds a bunch of documents is all
+mapped to a particular
+chard and it's these config servers that
+know the way the chunks are assigned to
+the shards now the config service
+themselves they're not a replica set but
+they do a two-phase commit to make any
+changes and it happens all in the
+background that if a collection is
+shorted the config servers keep track of
+where document Maps the shards and the
+Mongo s asks to config servers for that
+information just two ways to shard
+mongodb one is called a range based and
+the other is hash based now you could
+look this up in the documentation to
+learn more about it but range based
+takes a range of documents so for
+instance if you had user ID then it
+might take the user ID 0 through 100 and
+say all of those map to a particular
+shard and that shard lives let's say in
+s1 in short one and maybe 10 12 to 0 1
+in this chunk and it all is stolen shard
+to now that makes range based queries
+very efficient because if you do a query
+with a range of user IDs then they map
+to a particular shard and it's efficient
+to get the data now the other way to
+shard is hash based which i'm not going
+to show you which runs a hashing
+algorithm over the shard key now the
+short key is the key which maps a
+document to a shard and every document
+must contain a shard key so if we decide
+for instance that you want to take the
+users collection and chard on the user
+ID then you have to specify the user ID
+for all the documents otherwise mongo d
+wouldn't know where to put that document
+but it doesn't need to be unique so for
+instance doesn't need to be a primary
+key but there needs to be an index on
+that key and every document must contain
+the key alright so this is how it works
+and mongo s is going to establish
+connections to these various shards and
+mongo s kind of looks like a driver in
+that it's maintaining connections with
+these shards each one which is a replica
+set and it can handle the failover as
+needed within the shard for instance
+this might be the primary and this might
+be the primary and this might be the
+primary and then these might be
+secondaries and mongo s can handle that
+and your app which is using pi Mongo is
+connect
+to the Mongo s server so I've written a
+script to set up the Charlotte
+environment and I'm going to show it to
+you and then I'll show you what it looks
+like once you do it alright so let's go
+over this script now you can download
+this script yourself and run it on your
+computer there's also a version of it
+for Windows users it's a dot bat file
+this script is called an it underscores
+charted underscore env SH and it's a
+shell script kind of an old-school shell
+script we're going to go over it line by
+line so you can see what it does so the
+first thing it does is it kills all the
+existing manganese and manga wes's on
+your server you can see we're here it's
+doing that and then after that it's
+going to remove the slash data / config
+and celeste data / our directory because
+we're going to put the data in data /
+shard and data / config the config
+servers are going to have directories
+within the data / config directory and
+each shard is going to have a bunch of
+sub directories in / data / 0 1 and 2 I
+believe let's go through it the first
+thing we're going to do is we're going
+to start a replica set as shard 0 and do
+that we're going to create these
+directories data / shard 0rs0 RS 1 and
+RS 2 and then we're going to start our
+three Mongo d nodes we're going to tell
+them that they're all part of the same
+replica set called s0 we're going to
+just give a log paths the unique log
+files it's going to put them in the
+directory that I'm in these are the data
+directories we talked about that's going
+to listen on these non-standard ports
+3701 7-330 7019 and it's going to fork
+and it's also going to know that it's a
+shard server and also that it's going to
+be using some small files this is an
+nmap option to tell MongoDB not to
+allocate very large files at the outset
+if you're if you're just running in
+development that's going to sleep for
+five seconds to let the replica set come
+fully up and then it's going to
+configure our replica set now the way it
+configures replica set this is an
+old-school a shell technique it's called
+a here file it's running Mongo minus
+port 30 70 17 and then from there it's
+going to read all this into standard
+input so it's going to load a config up
+and the config is going to be that id0
+370 170 180 190 the same ports of the
+replica set we just created notice that
+we didn't need to connect to the primary
+to initiate the replica
+because before you create the replica
+set configuration there is no primary so
+therefore it doesn't matter which of
+these servers you connect to so we
+decided this neck 237 017 for this part
+so now the shore 0 replica set us up and
+running which is nice we're going to do
+the exact same thing for shard one again
+you'll notice different port numbers
+right here and we're going to go to
+sleep and then we're going to kectu one
+of the hosts in chard one and configure
+it as a replica set and then we're doing
+the same thing for shard too we're going
+to create three Mongo DS putting them in
+these separate directories the data / r2
+directory you can see their sub
+directories RS 0 RS 1 and rs to these
+are different parts of the replica set
+we've chosen different ports up in the
+57,000 range here and now we're going to
+initiate this replica set all right
+great now we need to start our config
+servers so for this we're going to
+create the directories for the config
+servers under / data / config a B and C
+and then we're going to start three
+Mongo DS each one of them with a DB path
+of config giving it a port telling it to
+fork and then also telling it that it is
+a config server and telling it again to
+use small files so now the config
+servers are up and running and the three
+shores are up and running but wait there
+bring it all together so we're starting
+a single Mongo s and we're starting this
+manga less the seedless from among OS is
+the config servers so we're telling it
+the config servers live at localhost 50
+70 40 41 and 42 so now Mongo s knows
+about the config servers which is good
+and the config servers know about my OS
+but we need to wait a while we're going
+to wait a full 60 seconds for this thing
+to qui ass otherwise sometimes things
+don't work well so we did that and at
+this point the entire thing is up and
+running except that the Mongo s and the
+config servers don't know about the
+shards because we told them on iOS about
+these config servers but we didn't
+actually tell the Mongo s or the config
+servers about the replica set you'll see
+there's no mention we create the config
+service of what replica sets or it
+shards it's going to connect to so
+that's the final part so now we're going
+to another hero file right here and
+we're going to run Mongo the Mongo shell
+program it's going to connect to 2701
+seven which is the port at Mongo s is
+listening on which is our router and
+then it's going to say add chart s0 at
+localhost 37 017 add chart s1 and add
+shard s2 and at this point we are now
+running a sharded system we're going to
+enable sharding on the database called
+school because i'm going to put
+something in the school database and
+we're going to shore the collection
+students which is going to hold our
+student grade information that you're
+familiar with we're going to show it on
+student ID now normally when you when
+you short a collection there has to be
+an index on what you're starting on the
+start key but if the collection is brand
+new and it is in this case it will
+create the index so that's going to
+create the index on student ID so I ran
+this in the background I won't take our
+time to run it in front of you but I ran
+it a few minutes ago in this computer
+and I also loaded the student data so
+let's take a look at that so I'm
+connecting via Mongo and you'll notice
+that for the first time we're seeing
+that it's not connecting to a Mongo d
+its Nick into a Mongo s router and now
+first thing I'm going to do is I'm going
+to get the status of my system so SH
+status gives you the status of a shorted
+system and get some information tells
+you that there are three shards this is
+unfortunately wrapping it because it's
+big font and it tells you that s0 lives
+at 37 017 and actually it discovered all
+the hosts in each of the replica sets
+that's very nice and we can see here
+that it tells us that the school
+database is in fact shorted and the
+shard key is student ID and it starts
+talking about the chunks and the range
+of chunks and you can see that right
+here it says that from let's see student
+ID 02 student ID 1 is on s0 student ID
+22 student ID 3490 is on s0 3497 to 77
+78 that's on s1 and looks like this is
+on s1 and looks like min ki to one is on
+s2 so that's the way this data is
+shorted and if we use the school
+database and then we do d b dot students
+not get indexes you can see that there's
+actually an index on student ID although
+we never added one the system did this
+automatically when we shorted it when it
+was empty which is very nice now if we
+look at data d b dot students dot find
+that pretty you can see it looks like
+the data we were looking at in some of
+the earlier lessons in some of the
+earlier units all right so let's do some
+explain commands and see how they differ
+now that running on a shorted system so
+let's do d b dot students dot explain
+dot find and let's use an empty
+predicate and then limit the 10 and see
+what it says so basically we're going to
+try to find all the documents alright so
+if we run that query and we go to the
+top here a little hard to track here we
+are you can see that it's doing a shard
+merge and that it's hitting shard 0 and
+it looks like it did a collection scan
+in chard 0 and it's also running against
+chard one it's going to have to hit all
+the shards for this it's not because it
+doesn't know the answer to this query
+it's a little hard to read this data but
+let me see if I can find where it says
+that all right so you can see here it
+says it's running shard 0 ah shard 1 and
+chard two are all evolved with this
+query now what if we did a query where
+it could go to a single shard like
+student ID let's say 1,000 if we explain
+that query that should only go to a
+single short let's see let's see if
+that's true so in that case it says the
+winning plan for this explain was a
+single shard it went to s 0 and it was
+able to use index which is fantastic
+uses index scan on the student ID index
+so that's going to be a pretty fast
+query alright so that gives you a flavor
+of how sharding works and I hope that
+you'll download these scripts and that
+you will try sharding yourself on your
+computer all right now it is time for a
+quiz if you want to build a production
+system with two shards each one a
+replica set with three nodes how many
+Mongo d processes must you start to six
+seven or nine answer it here
+
