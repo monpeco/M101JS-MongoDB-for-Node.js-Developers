@@ -4451,6 +4451,8 @@ https://youtu.be/pN1Yhrup9-I
 **Queries on foo collection order by timestamp**
 
     db.system.profile.find({ns:/test/foo/}).sort({ts:1}).pretty()
+    
+    db.system.profile.find({ns:/school2/students/}).sort({ts:1}).pretty()
 
 **Search for queries slower that a duration**
 
