@@ -536,3 +536,366 @@ While it is true that a replica set will never rollback a write if it was perfor
 
 
 ---
+
+
+### connecting to a replica set from the nodejs driver
+
+https://youtu.be/H1bzY0ktgEg
+
+
+alright so now let's talk about
+connecting to a replica set in the gs
+driver so just to recap a replica set is
+a collection of multiple Mongo d nodes
+that communicate with each other and try
+to keep a most up-to-date copy of the
+entire data set as they possibly can
+they should be as close to duplicates as
+possible meant for high availability and
+automatic failover so the way you deal
+with this in an application is through
+the driver and actually the driver is
+going to do a lot of the work for you in
+terms of managing the connections and
+keeping track of which notes are up and
+which no is the primary so for this
+lesson will cover how to start a
+connection to a replica set in the
+nodejs driver so the way you start a
+connection is you actually give the
+driver connection string just like
+before with the host names and ports of
+the nodes that you want to connect to so
+in this case we could give host names
+and ports of all three nodes you can
+actually give them in a comma separated
+list or you could just give the hostname
+and port of a single node and the driver
+would automatically detect that it's a
+replica set and discover the rest of the
+notes so let's just take the quick look
+at an example of how this will work in a
+real application so before we start we
+need to start our three node replica set
+so here I'm going to start my first
+replica set node I'm going to give it
+the port 30,000 1dd path data dbrs one
+so that one started so let's start our
+next node I'm going to start this one on
+port 30,000 to still on localhost give
+it a different data path and finally
+we'll start our third note of a replica
+set give it port 3000 3427 I connect we
+need to configure our replica set so
+let's connect to local host 30,000 won
+and you see we aren't actually a replica
+set yet I try our status we get an error
+so it's around RS not initiate to
+actually start our replica set alright
+so we're starting up our new replica set
+the next thing we want to do is actually
+add the other two notes
+this is just sort of a recap of the
+other lessons but just want to go over
+it one more time so I happen to know
+that the host name is education dot
+local and the port is 30,000 two of the
+first node and then for the next one the
+port is 30,000 three same hostname so
+now we've added all our notes to our
+replica set if we clear this look at RS
+status we can see that we have all of
+our nodes connected we have our primary
+and we have the two secondaries starting
+up alright so we've started our replica
+set now let's take a look at the
+application that we're going to use to
+connect to our replica set using the
+nodejs driver so this might look
+familiar we still use our mangu client
+we're still using the same functions the
+only real difference here is that
+instead of giving a single hostname and
+port we're actually giving a comma
+separated list i'm using this plus
+operator to concatenate the strings just
+so we don't have one long string
+wrapping around the window was a little
+too small but basically all I'm doing is
+passing a singles connection string to
+the Kinect function giving a call back
+exactly the same way as I did with a
+single node and I'm just giving this
+comma separated list of replica set
+members instead note that I could also
+just give one member and it would still
+be able to connect assuming that member
+was up if that member was not up then it
+would not be able to find the rest so
+down here we're using this DB object
+just like we did with the single node
+connecting the repple connection
+inserting a document and down here we're
+connecting the ruffle collection and
+we're finding one document and we should
+find the document that we just inserted
+then we're logging the document and
+closing the database so let's just run
+this example all right so we just ran
+our example and you can see that we've
+inserted our document and we found it
+successfully and this was all connected
+to a replica set so what actually
+happened here is that we gave it the
+connection string with three peplum set
+nodes the driver automatically connected
+figure out which one is the primary
+figured out what the secondaries were
+got the status of everything figured out
+exactly where to send are right now read
+and all of that happened behind the
+scenes so that our application
+have to have any of the logic of dealing
+with all the complexity of the added
+connections so that's how you connect to
+a replica set in nodejs alright so this
+is the quiz for connecting to a replica
+set from the dont je s driver the
+question is if you leave a replica set
+node out of the seed list within the
+driver what will happen is it the
+missing node will not be used by the
+application so that the missing node
+will be discovered as long as you lift
+at least one valid note is that the
+missing node will be used for reads but
+not for rights or is it the missing node
+will be used for rights but not for
+reads
+
+
+---
+
+### failover
+
+https://youtu.be/15jBQRolLV4
+
+alright so now let's talk about replica
+set failover in the know Jas driver so
+just to recap when you're sending rights
+or operations from the driver rights
+will go to the primary so all rights
+will go to the primary node in a replica
+set the reeds by default will go to the
+primary although you can configure them
+to go elsewhere which will actually
+cover in later sections so the question
+now is what happens when a node in this
+replica set goes down because that's
+actually the whole purpose of the
+replica set you have copies of your data
+because you want high availability and
+sort of more durability so the question
+we have now is what actually happens in
+that situation where this node just gets
+blasted off the face of the earth how do
+we need to respond and how does the
+driver respond so it turns out in the
+nodejs driver what actually happens is
+that the rights that come in from our
+application and the reads that can't yet
+be sent to a primary but that need to be
+sent to a primary are buffered in the
+driver so from the application
+perspective you see that you're
+dispatching all these reads and writes
+you just don't see them complete yet so
+the driver will actually offer these
+until the failover completes and you
+have a new primary then it will send all
+the operations then the client
+application will get all the responses
+and you'll see all the writes and reads
+complete as they normally would so let's
+look at an example of how this looks in
+application code so this is the example
+we're going to be using to demonstrate
+this failover behavior that I was just
+talking about and you notice that most
+of this is the same we still do normal
+insert call still have this connection
+string here what we're doing a little
+bit differently is using this set
+timeout function so what the settimeout
+function does is it actually registers
+the callback you give it and calls it
+after this timeout expires so this
+saying call the function insert document
+which is the function we're already n
+after one second or a thousand
+milliseconds so what this code will
+actually do is it'll come down here this
+is just a declaration so nothing's being
+executed yet but then we get down here
+and we call insert document which calls
+this function which will dispatch an
+insert and just continue on down here
+because we're actually doing this
+asynchronously we don't have to wait
+until we get a response so we
+immediately come down here and say
+dispatched insert and then register this
+function to be called again in 1,000
+milliseconds so the result will be one
+insert every second because this
+function will get called once register
+itself to be called again in one second
+it will get cold again register itself
+to get cold again in one second get
+called again and so on and so on so this
+is effectively like a for loop with a
+sleep of one second where we're just
+calling into it repeatedly one
+difference is that we don't have to wait
+for a response from insert before we
+sleep so we don't have to do any
+complicated logic like say you know how
+long do we need to sleep because we
+actually took half a second to do the
+insert and get the response let's sleep
+only for half a second this one's a
+little simpler in that respect because
+we can just sleep for a second and
+because we're not waiting for a response
+there aren't as many variables that we
+have to think about because we don't
+have to factor in the time it took to
+get a response from this insert we could
+just sleep for a second and get pretty
+close to one insert for a second so
+that's one difference is this
+asynchronous call here the other
+difference is this is not actually you
+know the same execution context this is
+actually just registering a callback
+it's not like we have a single thread
+going to sleep so one side of the fact
+is that if we call insert document we
+can actually call it twice what that'll
+do is call this function twice it'll
+register itself again twice so in the
+next second it will get called twice
+again and called twice again and call
+twice again and so on another thing you
+can do that's even crazier is you can
+put set timeout this line here twice now
+what that'll do is just exponentially
+increase the number of times this
+function is called so it'll get called
+the first time it will register itself
+twice then it'll get called twice and
+register itself twice per call so to
+register itself four times in the next
+second then eight times in the next
+second then 16 times and 32 times that
+rapidly grow in powers of 2 until you're
+inserting
+thousands of documents a second so
+that's kind of an interesting side
+effect of this I'd recommend you know
+taking some time to play with this
+function you copy this line or this line
+over a few times and just see what
+happens it's an interesting result so
+this is basically the example we're
+going to use to demonstrate failover all
+you really need to know is that it's
+basically a for loop that's dispatching
+insert operations and we should see the
+responses as they come in because this
+is an asynchronous program and we're
+inserting documents that have increasing
+document numbers so let's run this
+application and see what happens alright
+so we're running our application and as
+expected we see dispatched insert before
+we get response so this is the log
+message saying that we sent our insert
+out and this is the log that we have in
+our insert callback that we actually
+received the document so let's take a
+look at what happens when we do the
+failover so first let's connect to local
+host 30,000 won and conveniently we see
+that it says the primary in the prompt
+so we don't really have to check we just
+know that this is the primary so let's
+actually just completely shut this
+server down it's called DB shutdown
+server so we actually have to be an
+admin I don't have authentication so I
+can just use the admin database and then
+shut down the server so now we've shut
+down our server we look over here we see
+some interesting side effects we don't
+see any errors that would result from
+our callback being called we just see
+this dispatched insert message so let's
+go back up there and take a closer look
+so the interesting thing to note here is
+that we dispatch all these inserts we're
+still dispatching and insert per second
+we don't get any responses we also don't
+get any errors there's nothing calling
+back to our call backs we're just
+dispatching these operations and they
+seem to just be taking longer than usual
+but then we look down here once the
+failover completes we see this huge
+batch of operation suddenly come through
+so at this point the failover was done
+the driver sent out all the operations
+that had buffered when we were sending
+out one per second
+and you kind of get these operations
+back in one big block so that's what
+happens in the failover case that the
+driver actually just buffers the
+operations you're sending so they just
+seem to take a little longer than usual
+and then when the election is done the
+driver will send all the operations and
+you'll receive callbacks for the results
+as you normally would just as if the
+operation took longer than usual so
+that's pretty much all you need to know
+about dealing with failover and nodejs
+is that the driver does a lot of it for
+you so you really don't have to worry
+too much about writing code in your
+application to deal with this situation
+all right so let's take a quiz on
+failover in nodejs all right so the
+question is what will happen if this
+insert occurs during a primary election
+so if you make this call while an
+election is happening what will happen
+is it the insert will immediately
+succeed and the callback will be called
+is that the insert will fail with an
+error is that the insert will be
+buffered until the election completes
+then the callback will be called after
+the operation is sent and a response is
+received or is it the callback will be
+called first then the insert will be
+buffered until the election completes
+
+
+---
+
+### m101 23 write concern revisited
+
+https://youtu.be/5VyXyccjS3k
+
+
