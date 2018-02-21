@@ -295,4 +295,244 @@ receive an error back even if the write
 was successful check all that apply
 
 
+---
 
+### m101 7 replication intro
+
+https://youtu.be/f1WTYGORU3w
+
+
+---
+
+### m101 9 replica elections
+
+https://youtu.be/WFXSVHO78bQ
+
+
+---
+
+### m101 11 write consistency
+
+https://youtu.be/Oqf_Eza-s1M
+
+
+---
+
+### m101 13 creating replica sets
+
+https://youtu.be/flCFVFBRsKI
+
+
+---
+
+### Replication Internals
+
+https://youtu.be/6GbrJmxCEl0
+
+**Lecture Notes**
+
+At about 0:31, Andrew says that the secondaries are constantly reading the oplog of the primary. 
+It's true that the oplog entries originally come from the primary, but secondaries can sync from 
+another secondary, as long as at least there is a chain of oplog syncs that lead back to the primary.
+
+
+
+all right now we've started a 3-node
+replica set on our computer and let's
+look around a little bit and figure out
+how this works so we have a three node
+replica set and each of these Mongo DS
+such I'm going to mark with an M has
+within it an OPP blog and the OP blog is
+going to be kept in sync by Mongo so
+what happens is one of these is a
+primary and of course your rights have
+to be to your primary and your
+secondaries are going to be constantly
+reading the upload of the primary when
+we do a right on a primary it's going to
+get written to the op log and then the
+secondary is going to be querying what's
+new in the op log and applying those
+same operations to the secondary and
+when an election occurs for instance if
+we decide that we want to kick down the
+primary then a new primary will be
+elected so for instance this guy might
+become primary and then when this guy
+comes back up you might become secondary
+all right let's play a little bit and
+see how this looks at the shell so I
+have a three node replica set and this
+is a unix box so I'm just going to run
+the process command PS command and see
+what Mongo DS are running we can see we
+have the three Mongo DS running and
+they're running at these three different
+ports 2701 7018 and 019 so let's connect
+to one of them 20 70 17 that would be
+the default and if I do that I see that
+this is a secondary node if I Ron RS
+status I get the configuration file for
+this replica set might look slightly
+different in this lesson than the
+previous ones and some of these lessons
+were recorded on a slightly different
+version of MongoDB but the critical
+parts are the same and we can see that
+the primary let's see 27 017 is a
+secondary 27 0 18 is a primary alright
+and 27 019 is a secondary let's connect
+directly to the primary this time so
+Mongo minus minus port 27 0 18 and now
+i'm going to write something into a
+collection so i'm going to test the
+database i'm going to write something
+into the people collection i do an
+insert alright so we did an insert of
+named andrew into the people collection
+now how did this show up on the other
+side well it shows up on the other side
+because there's a knob log so let's show
+you where that is so if we use local
+which is the local database and then we
+show collections you're going to see a
+blog RS so let's go here and let's look
+at that collection and see what's in it
+and we'll pretty print it because it's
+small so some of these are earlier from
+before I started recording but right
+here we have an insert is an op insert
+into test stop people here's in the
+score ID and here's name Andrew so this
+is the actual insert that we just did on
+the screen and we can see here let's see
+what's before that it looks like this
+created the people collection so there's
+actually two different commands in the
+op log one of them created the people
+collection and the other one insert it
+into it and the previous one is from a
+previous recording so all right so let's
+go to the secondary and see what's going
+on there so I'm going I'm going to go
+here now I know that one of my
+secondaries is 27 017 so we'll connect
+to that all right there we go it's a
+secondary if I use test and do d be deaf
+people dot fine first of all my document
+should be there oh why can't I do the
+read well I can't do the read because
+you can't read from a secondary unless
+you say that it's okay to do so and so
+you can do that within the shell by
+calling RS thoughts slave okay so I did
+that and now if I do my find I should be
+able to see the document so there's a
+document in the test database in the
+people collection with named Andrew and
+I should see the exact same item in my
+op log let's look there so use local DB
+top blog that RS dot find that pretty
+and we can see that this applaud
+contains exactly the same statements as
+the OP alive in the primary here's the
+creation of the people collection and
+here's the actual insert into people
+with named Andrew now the way
+replication works is that each of these
+databases knows how far along they are
+each of these servers and so it asks the
+primary for whatever is new
+so if we look at RS status on the
+secondary you can see and this is 27 017
+you can see that he has some information
+about his op time and his op time date
+and this lets him know that he has
+everything up to date to this point and
+you can see that he knows where he's
+getting his data from so now a couple
+things to note first is the out blog is
+a cap collection which means it's going
+to roll off after a certain amount of
+time and so you need to have a big
+enough ah blog to be able to deal with
+periods where the secondary can't see
+the primary and how large that blog is
+going to be is going to depend on how
+long you might expect there to be a
+bifurcation in the network and also how
+much data you're writing how fast is the
+applaud growing so in a very fast-moving
+system it might a very large ah blog but
+in a smaller system which isn't moving
+very fast where there aren't very many
+network partitions you won't need a very
+large ah blog to make sure that it can
+always see the a blog now if the up log
+rolls over and the secondary can't get
+to the primaries a blog you can still
+resync the secondary but he has to read
+the entire database which is much much
+slower and the other thing to note about
+the applaud is that this blog uses this
+this statement based approach where
+these are actually MongoDB documents and
+it doesn't matter which storage engine
+you're using or even which version of
+MongoDB you're running to some extent
+and so you can have mixed mode replica
+sets for instance you can have a wired
+tiger secondary and an nmap primary and
+in fact this is one of the features that
+will allow you to do upgrades because if
+you want to do a rolling upgrade of the
+system you can do it by upgrading parts
+of it at a time and then having let's
+say a 30 primary replicating itself to
+an older secondary and then switch it
+around and eventually all the nodes get
+upgraded okay so last thing i want to
+show you in this lesson is what happens
+when we actually failover so let's do
+that real quickly right now what we're
+going to do is we're going to take down
+the primary and let's see we know where
+the primary is let's look at RS that
+status again so the primary is a 27-0 18
+and we're going to take him down and see
+how long it takes to get an election
+going so we're going to do that by going
+here and we're
+going to do a PS minus EF grep for Mongo
+d again and we're going to look at the
+process 60 494 that's running at 27 0 18
+and we are going to kill 60 494 kill 60
+494 that's the primary running a 27-0 18
+and if we do that and we go back to this
+window then we can see oh look he's
+already the primary so this now there's
+already been an election happened in
+under a second it looks like and now
+we've got 20 7018 scene is unreachable
+from the standpoint and this window is
+connected to 27 017 if you recall and
+this at 27 017 says oh I'm now the
+primary that was really fast so that's
+how a replica said election might work
+if a failure occurs all right it's time
+for a quiz which is the following
+statements are true about replication
+check all that apply
+
+---
+
+### m101 17 failover and rollback
+
+https://youtu.be/IW1oW_Adlt0
+
+Lecture Notes
+While it is true that a replica set will never rollback a write if it was performed with w=majority and that write successfully replicated to a majority of nodes, it is possible that a write performed with w=majority gets rolled back. Here is the scenario: you do write with w=majority and a failover over occurs after the write has committed to the primary but before replication completes. You will likely see an exception at the client. An election occurs and a new primary is elected. When the original primary comes back up, it will rollback the committed write. However, from your application's standpoint, that write never completed, so that's ok.
+
+
+---
