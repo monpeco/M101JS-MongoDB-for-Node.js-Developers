@@ -899,3 +899,176 @@ buffered until the election completes
 https://youtu.be/5VyXyccjS3k
 
 
+---
+
+### Read Preferences
+
+https://youtu.be/mhHaS4ZWzZE
+
+You can configure your applications via the drivers to read from secondary nodes within a replica set. What are the reasons that you might not want to do that? Check all that apply.
+
+Answer
+In some ways, this question goes a bit beyond the lecture. It discusses what can go wrong, particularly for a non-recommended deployment. That said, this list of answers includes things that people do try to implement from time to time, so we want to make sure you're aware of the dangers.
+
+Answers:
+
+Reading from a secondary prevents it from being promoted to primary.
+False.
+Reading from a secondary does not directly affect a secondary's ability to become primary, though if the reads caused it to lag on writes and fall behind on the oplog, that might make it ineligible until it is able to catch up. Here's a note on replication lag.
+If the secondary hardware has insufficient memory to keep the read working set in memory, directing reads to it will likely slow it down.
+True.
+This could really go either way. If the secondary has excess capacity, beyond what it needs to take writes, then directing reads to it would cause it to work more, but perhaps it would still be able to keep up with the oplog. On the other hand, if the primary is taking writes faster than the secondary can keep up, then this scenario would definitely slow it down.
+Generally, your secondary should be on the same hardware as your primary, so if that's the case, and your primary would be able to keep up with the reads, then this shouldn't be a problem. Of course, if your primary can handle both the read and write loads, then there's really no compelling reason to send the reads to the secondary.
+If your write traffic is great enough, and your secondary is less powerful than the primary, you may overwhelm the secondary, which must process all the writes as well as the reads. Replication lag can result.
+True.
+This is a design anti-pattern that we sometimes see.
+A similar anti-pattern occurs when reads are routed to the primary, but the secondary is underpowered and unable to handle the full read + write load. In this case, if the secondary becomes primary, it will be unable to fulfill its job.
+You may not read what you previously wrote to MongoDB on a secondary because it will lag behind by some amount.
+True.
+This is pretty straightforward. Unless you are reading from the primary, the secondary will not necessarily have the most current version of the documents you need to read.
+Whether this is a problem or not depends on your application's requirements and business concerns, so it goes a bit outside the scope of development.
+
+
+by default MongoDB reads and writes both
+go to the primary now here's a three
+node replica set and as usual will mark
+the nodes as ms and you have your
+application a called app and this
+application of course has a connection
+to the primary and the driver probably
+also maintains in fact does maintain
+connections to the secondary nodes as
+well and by default your reads and your
+rights are going to go to your primary
+and that's a good thing because as a
+result you're going to read what you
+wrote because with replication and this
+is replication it may be the case that
+if you did a read to a secondary and had
+written into the primary that if the
+right had not yet propagated to the
+secondary you may not read what you
+wrote which makes it harder to reason
+about your programs nevertheless if you
+would like to read from secondaries in
+MongoDB we do allow that you always have
+to write to the primary but you can read
+from the secondaries and we call this
+the read preference and there are
+several different options for that so
+here they are they are primary which is
+the default which means i want to read
+from primary primary preferred and that
+means i wanna me from the primary but
+the primary is not down i'll take the
+secondary then there's secondary which
+means i want to rotate my reads to my
+secondaries and only my secondaries
+don't send my reads to the primary and
+then there's secondary preferred and you
+can imagine what that does it prefers
+the secondaries but it could also send
+it to the primary if there is no
+secondary available and then there's
+also something called nearest and
+nearest well tell the driver to send it
+to the mongo d that seems to be the
+closest in terms of ping time and i
+believe as a default anything within 15
+milliseconds of that time is also
+considered closest it will also send it
+to that node and then there's also
+within nearest there's a concept of
+using a tag set which is a data center
+awareness idea that you could mark
+certain nodes as being part of a certain
+data center and so you let's say if
+you're in New York you want your reads
+to go to the New York data center I'm
+not going to go over how that works but
+that's also possible and you can read
+about the documentation if you want so
+as I said by default the read preference
+is primary what
+just send your reads only to your
+primary it's also that way inside the
+shell which is why when I failover the
+primary and I wind up connected to the
+secondary in the shell and I try to read
+a collection it says all you can't do
+that and when you say RS that's slave
+okay what you're saying is it's okay for
+me to send it to the secondary I'm
+guessing it probably uses primary
+preferred at that point as a read
+preference but essentially since the
+shell is only connect into one Mongo d
+it probably doesn't matter but it allows
+the reeds to go to that secondary okay
+now if you decide to read from the
+secondary you're not going to have a
+strongly consistent read you're going to
+have what's called an eventually
+consistent read which is that eventually
+the data will show up on the secondary
+but it won't be necessarily data that
+you wrote all right now let's go and
+look at a very small program that reads
+using read preference secondary this
+program is going to connect using mongol
+client and here's a seed list and it's
+going to set the read preference right
+here read pref to pymongo dot read
+underscore preferences that read
+preference secondary if you look at the
+documentation at AP item on BB org and
+you click through Python you can see
+where these are listed inside the API
+and this simple program is going to just
+go through and find a thousand things in
+the things collection this is the in the
+m101 database you've been using this
+collection for a while in this unit and
+it's going to print out the documents at
+finds and you'll notice it's not
+actually catching any exceptions but yet
+because it's reading from secondary it's
+still going to be robust within the face
+of the auto reconnect so let me show you
+so let's go through and run this program
+and it's reading these documents and now
+let me step down the program Mary all
+right I step down the primary now I'm a
+secondary and I go here and you'll see I
+never skipped a beat it continued to
+work and the reason that can you need to
+work is that MongoDB was allowed to read
+from secondaries and so actually not
+allowed to I said only read from
+secondaries and so the fact that the
+primary failed over was not a problem I
+wouldn't recommend that you don't catch
+exceptions in your read code but i just
+wanted to illustrate that the failover
+was not a problem in this particular
+case all right now it is time for a quiz
+now you can configure your applications
+via the drivers to read from secondary
+node than a replica set one of the
+reasons you might not want to do that
+check all that apply now you notice that
+I didn't talk about this in
+the lesson so you have to figure it out
+and think about it and then we'll
+discuss it in the answer
+
+---
+
+### m101 27 review implications of replication
+
+https://youtu.be/K5ISnvYKQFQ
+
+**Lecture Notes**
+One thing to remember is that the driver will check, upon attempting to write, whether or not its write concern is valid. It will error if, for example, w=4 but there are 3 data-bearing replica set members. This will happen quickly in both the Java and pymongo drivers. Reading with an invalid readPreference will take longer, but will also result in an error. Be aware, though, that this behavior can vary a little between drivers and between versions.
+
+---
